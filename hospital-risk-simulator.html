@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Healthcare Crisis Analytics — Unknown Risk Simulator</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117; --surface: #161b22; --card: #1c2128;
+    --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+    --accent: #58a6ff; --danger: #f85149; --warn: #d29922;
+    --ok: #3fb950; --purple: #bc8cff;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+
+  /* ── Layout ── */
+  .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 20px; }
+  .main { padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: .02em; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+  .logo span { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; letter-spacing: 0; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field select, .field input[type=range] { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 13px; outline: none; }
+  .field select:focus { border-color: var(--accent); }
+  .field .range-row { display: flex; align-items: center; gap: 8px; }
+  .field input[type=range] { padding: 0; cursor: pointer; accent-color: var(--accent); }
+  .range-val { font-size: 12px; color: var(--accent); font-weight: 600; min-width: 28px; text-align: right; }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+  .toggle-row span { font-size: 12px; color: var(--muted); }
+  .toggle { position: relative; width: 36px; height: 20px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider-t { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 20px; transition: .2s; }
+  .slider-t::before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .2s; }
+  input:checked + .slider-t { background: var(--accent); }
+  input:checked + .slider-t::before { transform: translateX(16px); background: white; }
+
+  .btn-simulate {
+    margin-top: auto; background: var(--accent); color: #0d1117; border: none;
+    border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: opacity .15s, transform .1s; letter-spacing: .02em;
+  }
+  .btn-simulate:hover { opacity: .88; }
+  .btn-simulate:active { transform: scale(.97); }
+  .btn-simulate.running { background: var(--warn); animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: .6; } }
+
+  /* ── Header ── */
+  .header { display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header h1 span { color: var(--accent); }
+  .badges { display: flex; gap: 8px; }
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; border: 1px solid; }
+  .badge.low { color: var(--ok); border-color: var(--ok); }
+  .badge.medium { color: var(--warn); border-color: var(--warn); }
+  .badge.high { color: var(--danger); border-color: var(--danger); }
+  .badge.idle { color: var(--muted); border-color: var(--border); }
+
+  /* ── KPI Cards ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .kpi .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .kpi .kpi-val { font-size: 28px; font-weight: 700; margin: 4px 0 2px; }
+  .kpi .kpi-sub { font-size: 11px; color: var(--muted); }
+  .kpi.danger .kpi-val { color: var(--danger); }
+  .kpi.warn .kpi-val { color: var(--warn); }
+  .kpi.ok .kpi-val { color: var(--ok); }
+  .kpi.accent .kpi-val { color: var(--accent); }
+
+  /* ── Charts row ── */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .chart-card h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+  .chart-box { width: 100%; }
+
+  /* ── Event log ── */
+  .log-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .log-card h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .log-card h3 button { font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+  .log-card h3 button:hover { color: var(--text); }
+  .log-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
+  .log-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 6px; background: var(--surface); border-left: 3px solid var(--border); font-size: 12px; }
+  .log-item.crit { border-left-color: var(--danger); }
+  .log-item.warn { border-left-color: var(--warn); }
+  .log-item.info { border-left-color: var(--accent); }
+  .log-time { color: var(--muted); white-space: nowrap; min-width: 54px; }
+  .log-msg { color: var(--text); flex: 1; }
+  .log-score { font-weight: 700; min-width: 36px; text-align: right; }
+  .log-item.crit .log-score { color: var(--danger); }
+  .log-item.warn .log-score { color: var(--warn); }
+  .log-item.info .log-score { color: var(--ok); }
+  .empty-state { color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }
+
+  /* ── Radar row ── */
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── Risk scenarios panel ── */
+  .scenarios-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .scenarios-card h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+  .scenario-grid { display: flex; flex-direction: column; gap: 6px; }
+  .scenario-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; background: var(--surface); border-radius: 6px; border: 1px solid var(--border); }
+  .scenario-name { font-size: 12px; font-weight: 500; }
+  .scenario-bar-wrap { flex: 1; margin: 0 10px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .scenario-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+  .scenario-pct { font-size: 11px; font-weight: 700; min-width: 32px; text-align: right; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="logo">
+      HealthCare Crisis Analytics
+      <span>Unknown Risk Factor Simulator v1.0</span>
+    </div>
+
+    <div>
+      <div class="section-label">Hospital Profile</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="field">
+          <label>Hospital Type</label>
+          <select id="hospType">
+            <option value="community">Community Hospital</option>
+            <option value="academic">Academic Medical Center</option>
+            <option value="rural">Rural Critical Access</option>
+            <option value="childrens">Children's Hospital</option>
+            <option value="trauma">Level I Trauma Center</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Bed Capacity</label>
+          <div class="range-row">
+            <input type="range" id="bedCap" min="50" max="1000" step="50" value="300" oninput="document.getElementById('bedCapVal').textContent=this.value" />
+            <span class="range-val" id="bedCapVal">300</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Geographic Risk Zone</label>
+          <select id="geoZone">
+            <option value="coastal">Coastal / Flood-Prone</option>
+            <option value="central">Central / Tornado Alley</option>
+            <option value="western">Western / Wildfire Zone</option>
+            <option value="northern">Northern / Winter Storm</option>
+            <option value="urban">Dense Urban</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Infrastructure Age (years)</label>
+          <div class="range-row">
+            <input type="range" id="infraAge" min="1" max="60" value="20" oninput="document.getElementById('infraAgeVal').textContent=this.value" />
+            <span class="range-val" id="infraAgeVal">20</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>EHR Dependency Level</label>
+          <select id="ehrDep">
+            <option value="full">Fully Digital</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="paper">Paper-Dominant</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Simulation Parameters</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="field">
+          <label>Unknown Factor Intensity</label>
+          <div class="range-row">
+            <input type="range" id="intensity" min="1" max="10" value="5" oninput="document.getElementById('intensityVal').textContent=this.value" />
+            <span class="range-val" id="intensityVal">5</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Cascade Effect Weight</label>
+          <div class="range-row">
+            <input type="range" id="cascade" min="0" max="100" step="5" value="40" oninput="document.getElementById('cascadeVal').textContent=this.value+'%'" />
+            <span class="range-val" id="cascadeVal">40%</span>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <span>Compound Events</span>
+          <label class="toggle"><input type="checkbox" id="compound" checked /><span class="slider-t"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span>Include Black Swan</span>
+          <label class="toggle"><input type="checkbox" id="blackSwan" /><span class="slider-t"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span>Cyber Threat Layer</span>
+          <label class="toggle"><input type="checkbox" id="cyberLayer" checked /><span class="slider-t"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-simulate" id="simBtn" onclick="runSimulation()">▶ Run Simulation</button>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- Header -->
+    <div class="header">
+      <h1><span>Unknown Risk</span> Factor Simulator</h1>
+      <div class="badges">
+        <span class="badge idle" id="riskBadge">IDLE</span>
+        <span class="badge idle" id="simBadge">NO SIMULATION</span>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi accent">
+        <div class="kpi-label">Overall Risk Score</div>
+        <div class="kpi-val" id="kpiRisk">—</div>
+        <div class="kpi-sub">out of 100</div>
+      </div>
+      <div class="kpi warn">
+        <div class="kpi-label">Departments Affected</div>
+        <div class="kpi-val" id="kpiDepts">—</div>
+        <div class="kpi-sub">of 8 total</div>
+      </div>
+      <div class="kpi danger">
+        <div class="kpi-label">Est. Financial Impact</div>
+        <div class="kpi-val" id="kpiFinancial">—</div>
+        <div class="kpi-sub">USD (simulated)</div>
+      </div>
+      <div class="kpi ok">
+        <div class="kpi-label">Recovery Time Est.</div>
+        <div class="kpi-val" id="kpiRecovery">—</div>
+        <div class="kpi-sub">days to full ops</div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <h3>Department Impact Scores</h3>
+        <div class="chart-box" id="deptChart" style="height:220px"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Risk Timeline (Simulated Hours)</h3>
+        <div class="chart-box" id="timelineChart" style="height:220px"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Row -->
+    <div class="bottom-row">
+      <!-- Radar -->
+      <div class="chart-card">
+        <h3>Risk Profile Radar</h3>
+        <div class="chart-box" id="radarChart" style="height:220px"></div>
+      </div>
+
+      <!-- Scenarios -->
+      <div class="scenarios-card" style="grid-column: span 1;">
+        <h3>Unknown Scenario Probabilities</h3>
+        <div class="scenario-grid" id="scenarioGrid">
+          <div class="empty-state">Run a simulation to generate scenarios</div>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="log-card">
+        <h3>
+          Simulation Event Log
+          <button onclick="clearLog()">Clear</button>
+        </h3>
+        <div class="log-list" id="logList">
+          <div class="empty-state">No events yet</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── ECharts instances ──
+let deptChart, timelineChart, radarChart;
+let simRunning = false;
+let simCount = 0;
+
+const DEPARTMENTS = ['Emergency','ICU','Surgery','Pharmacy','Radiology','Oncology','Maternity','IT/Network'];
+const RADAR_DIMS = ['Operational','Financial','Clinical','Cyber','Infrastructure','Supply Chain'];
+
+const UNKNOWN_SCENARIOS = [
+  { name: 'Atypical Pathogen Surge', baseProb: 0.12, color: '#f85149' },
+  { name: 'AI System Hallucination', baseProb: 0.08, color: '#bc8cff' },
+  { name: 'Supply Chain Crypto-Seizure', baseProb: 0.15, color: '#d29922' },
+  { name: 'Solar Flare Blackout', baseProb: 0.05, color: '#58a6ff' },
+  { name: 'Mass Psychogenic Event', baseProb: 0.07, color: '#3fb950' },
+  { name: 'Cascading HVAC Failure', baseProb: 0.18, color: '#ffa657' },
+  { name: 'Credential Deepfake Attack', baseProb: 0.11, color: '#f778ba' },
+  { name: 'Undocumented Drug Interaction', baseProb: 0.09, color: '#79c0ff' },
+];
+
+function initCharts() {
+  deptChart = echarts.init(document.getElementById('deptChart'), 'dark');
+  timelineChart = echarts.init(document.getElementById('timelineChart'), 'dark');
+  radarChart = echarts.init(document.getElementById('radarChart'), 'dark');
+
+  // Dept chart placeholder
+  deptChart.setOption({
+    backgroundColor: 'transparent',
+    xAxis: { type: 'value', axisLabel: { color: '#8b949e' }, splitLine: { lineStyle: { color: '#30363d' } }, max: 100 },
+    yAxis: { type: 'category', data: DEPARTMENTS, axisLabel: { color: '#8b949e', fontSize: 11 } },
+    grid: { left: 90, right: 20, top: 10, bottom: 20 },
+    series: [{ type: 'bar', data: Array(8).fill(0), itemStyle: { color: '#30363d', borderRadius: 3 } }],
+    tooltip: { trigger: 'axis' }
+  });
+
+  timelineChart.setOption({
+    backgroundColor: 'transparent',
+    xAxis: { type: 'category', data: Array.from({length: 24}, (_, i) => `H${i+1}`), axisLabel: { color: '#8b949e', fontSize: 10 }, splitLine: { show: false } },
+    yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: '#8b949e' }, splitLine: { lineStyle: { color: '#30363d' } } },
+    grid: { left: 40, right: 16, top: 10, bottom: 28 },
+    series: [{ type: 'line', data: Array(24).fill(null), smooth: true, symbol: 'none', areaStyle: { opacity: .15 }, lineStyle: { color: '#58a6ff', width: 2 }, itemStyle: { color: '#58a6ff' } }],
+    tooltip: { trigger: 'axis' }
+  });
+
+  radarChart.setOption({
+    backgroundColor: 'transparent',
+    radar: { indicator: RADAR_DIMS.map(n => ({ name: n, max: 100 })), axisName: { color: '#8b949e', fontSize: 10 }, splitLine: { lineStyle: { color: '#30363d' } }, splitArea: { show: false } },
+    series: [{ type: 'radar', data: [{ value: Array(6).fill(0), name: 'Risk', areaStyle: { opacity: .2 }, lineStyle: { color: '#58a6ff' }, itemStyle: { color: '#58a6ff' } }] }],
+    tooltip: { trigger: 'item' }
+  });
+}
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+function runSimulation() {
+  if (simRunning) return;
+  simRunning = true;
+  simCount++;
+
+  const btn = document.getElementById('simBtn');
+  btn.classList.add('running');
+  btn.textContent = '⏳ Simulating…';
+
+  const intensity = parseInt(document.getElementById('intensity').value);
+  const cascadeW = parseInt(document.getElementById('cascade').value) / 100;
+  const compound = document.getElementById('compound').checked;
+  const blackSwan = document.getElementById('blackSwan').checked;
+  const cyber = document.getElementById('cyberLayer').checked;
+  const infraAge = parseInt(document.getElementById('infraAge').value);
+  const beds = parseInt(document.getElementById('bedCap').value);
+  const ehrDep = document.getElementById('ehrDep').value;
+  const geoZone = document.getElementById('geoZone').value;
+  const hospType = document.getElementById('hospType').value;
+
+  // Modifiers
+  const infraMod = 1 + (infraAge / 60) * 0.4;
+  const ehrMod = ehrDep === 'full' ? 1.3 : ehrDep === 'hybrid' ? 1.1 : 0.9;
+  const geoMod = { coastal: 1.3, central: 1.2, western: 1.25, northern: 1.15, urban: 1.1 }[geoZone];
+  const blackSwanBonus = blackSwan ? rand(0, 20) : 0;
+  const cyberBonus = cyber ? rand(5, 15) : 0;
+  const compoundBonus = compound ? rand(5, 15) : 0;
+
+  // Dept impacts
+  const deptScores = DEPARTMENTS.map(d => {
+    let base = rand(10, 60) * (intensity / 5) * infraMod * geoMod;
+    if (d === 'IT/Network' && cyber) base *= ehrMod * 1.4;
+    if (d === 'ICU' || d === 'Surgery') base *= 1.1;
+    base += cascadeW * rand(5, 20);
+    return clamp(Math.round(base), 0, 100);
+  });
+
+  // Cascade: top-impacted depts raise others
+  const maxDept = Math.max(...deptScores);
+  const cascaded = deptScores.map(v => clamp(Math.round(v + cascadeW * (maxDept - v) * rand(0.1, 0.5)), 0, 100));
+
+  // Overall
+  const overall = clamp(Math.round(cascaded.reduce((a, b) => a + b, 0) / cascaded.length + blackSwanBonus + compoundBonus), 0, 100);
+
+  // Radar dims
+  const radar = [
+    clamp(Math.round(rand(40, 80) * (intensity / 5) * geoMod), 0, 100),   // operational
+    clamp(Math.round(overall * rand(0.8, 1.2)), 0, 100),                    // financial
+    clamp(Math.round(rand(30, 85) * (intensity / 5)), 0, 100),              // clinical
+    clamp(Math.round((cyber ? rand(50, 90) : rand(10, 40)) * ehrMod), 0, 100), // cyber
+    clamp(Math.round(rand(20, 70) * infraMod), 0, 100),                    // infrastructure
+    clamp(Math.round(rand(20, 65) * (intensity / 5)), 0, 100),              // supply
+  ];
+
+  // Timeline: simulate 24-hour risk curve
+  const timeline = [];
+  let cur = rand(5, 15);
+  for (let i = 0; i < 24; i++) {
+    cur += rand(-5, 12) * (intensity / 5);
+    if (blackSwan && i === randInt(6, 16)) cur += rand(20, 35);
+    timeline.push(clamp(Math.round(cur), 0, 100));
+  }
+
+  // Financial impact
+  const baseFinancial = beds * rand(800, 2500) * (overall / 50) * infraMod;
+  const financialFmt = baseFinancial >= 1_000_000
+    ? '$' + (baseFinancial / 1_000_000).toFixed(1) + 'M'
+    : '$' + Math.round(baseFinancial / 1000) + 'K';
+
+  // Recovery time
+  const recovery = clamp(Math.round(overall * rand(0.1, 0.4) * infraMod), 1, 90);
+
+  // Depts affected
+  const deptsAffected = cascaded.filter(v => v > 35).length;
+
+  // Scenario probabilities
+  const scenarioProbs = UNKNOWN_SCENARIOS.map(s => {
+    let p = s.baseProb;
+    if (s.name.includes('Cyber') || s.name.includes('Credential') || s.name.includes('AI')) p *= cyber ? 1.6 : 0.6;
+    if (s.name.includes('Solar') || s.name.includes('HVAC')) p *= geoMod * infraMod;
+    if (s.name.includes('Pathogen') || s.name.includes('Drug')) p *= hospType === 'academic' ? 1.4 : 1.0;
+    p *= (1 + (intensity - 5) * 0.08);
+    if (blackSwan) p *= 1.3;
+    return { ...s, prob: clamp(Math.round(p * 100), 1, 95) };
+  }).sort((a, b) => b.prob - a.prob);
+
+  // Risk level
+  const riskLevel = overall >= 70 ? 'HIGH' : overall >= 40 ? 'MEDIUM' : 'LOW';
+
+  // Animate update
+  setTimeout(() => {
+    // KPIs
+    animateVal('kpiRisk', overall);
+    document.getElementById('kpiDepts').textContent = deptsAffected;
+    document.getElementById('kpiFinancial').textContent = financialFmt;
+    document.getElementById('kpiRecovery').textContent = recovery + 'd';
+
+    // Risk badge
+    const rb = document.getElementById('riskBadge');
+    rb.textContent = riskLevel;
+    rb.className = 'badge ' + riskLevel.toLowerCase();
+    document.getElementById('simBadge').textContent = `SIM #${simCount}`;
+    document.getElementById('simBadge').className = 'badge medium';
+
+    // Dept chart
+    const colors = cascaded.map(v => v >= 70 ? '#f85149' : v >= 45 ? '#d29922' : '#3fb950');
+    deptChart.setOption({
+      series: [{ data: cascaded.map((v, i) => ({ value: v, itemStyle: { color: colors[i], borderRadius: 3 } })) }]
+    });
+
+    // Timeline
+    const tlColors = timeline.map(v => v >= 70 ? '#f85149' : '#58a6ff');
+    timelineChart.setOption({
+      series: [{ data: timeline, lineStyle: { color: '#58a6ff' }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: '#58a6ff44' }, { offset: 1, color: '#58a6ff05' }] }, opacity: 1 } }]
+    });
+
+    // Radar
+    radarChart.setOption({
+      series: [{ data: [{ value: radar, areaStyle: { opacity: .25, color: '#58a6ff' }, lineStyle: { color: '#58a6ff' }, itemStyle: { color: '#58a6ff' } }] }]
+    });
+
+    // Scenarios
+    const grid = document.getElementById('scenarioGrid');
+    grid.innerHTML = '';
+    scenarioProbs.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'scenario-item';
+      el.innerHTML = `
+        <span class="scenario-name">${s.name}</span>
+        <div class="scenario-bar-wrap"><div class="scenario-bar" style="width:0%;background:${s.color}" data-width="${s.prob}"></div></div>
+        <span class="scenario-pct" style="color:${s.color}">${s.prob}%</span>
+      `;
+      grid.appendChild(el);
+    });
+    // animate bars
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.scenario-bar').forEach(bar => {
+        bar.style.width = bar.dataset.width + '%';
+      });
+    });
+
+    // Log
+    addLog(riskLevel, overall, cascaded, blackSwan, cyber);
+
+    btn.classList.remove('running');
+    btn.textContent = '▶ Run Simulation';
+    simRunning = false;
+  }, 1200);
+}
+
+function animateVal(id, target) {
+  const el = document.getElementById(id);
+  const start = parseInt(el.textContent) || 0;
+  const dur = 600, startTime = performance.now();
+  function step(now) {
+    const p = Math.min((now - startTime) / dur, 1);
+    el.textContent = Math.round(start + (target - start) * p);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function addLog(level, score, deptScores, blackSwan, cyber) {
+  const list = document.getElementById('logList');
+  const empty = list.querySelector('.empty-state');
+  if (empty) empty.remove();
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const cls = score >= 70 ? 'crit' : score >= 40 ? 'warn' : 'info';
+  const topDept = DEPARTMENTS[deptScores.indexOf(Math.max(...deptScores))];
+  const msgs = [
+    `Simulation #${simCount} complete — Overall risk ${score}/100. Highest impact: ${topDept}.`,
+    ...(blackSwan ? [`⚠ Black Swan event detected in simulation window.`] : []),
+    ...(cyber ? [`Cyber threat layer active — IT/Network exposure elevated.`] : []),
+    ...(score >= 70 ? [`CRITICAL: Multiple cascading failures projected. Recovery plan required.`] : []),
+  ];
+
+  msgs.forEach(msg => {
+    const item = document.createElement('div');
+    item.className = `log-item ${cls}`;
+    item.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-msg">${msg}</span><span class="log-score">${score}</span>`;
+    list.insertBefore(item, list.firstChild);
+  });
+
+  // Trim to last 20
+  while (list.children.length > 20) list.removeChild(list.lastChild);
+}
+
+function clearLog() {
+  document.getElementById('logList').innerHTML = '<div class="empty-state">Log cleared</div>';
+}
+
+// ── Init ──
+window.addEventListener('load', () => {
+  initCharts();
+  window.addEventListener('resize', () => {
+    deptChart.resize(); timelineChart.resize(); radarChart.resize();
+  });
+});
+</script>
+</body>
+</html>
