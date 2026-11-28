@@ -3,129 +3,179 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Healthcare Crisis Analytics — Unknown Risk Simulator</title>
+<title>Healthcare Disaster Preparedness — Known Risk Simulator</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0d1117; --surface: #161b22; --card: #1c2128;
+    --bg: #0d1117; --surface: #161b22; --card: #1c2128; --card2: #21262d;
     --border: #30363d; --text: #e6edf3; --muted: #8b949e;
     --accent: #58a6ff; --danger: #f85149; --warn: #d29922;
-    --ok: #3fb950; --purple: #bc8cff;
+    --ok: #3fb950; --purple: #bc8cff; --orange: #ffa657;
   }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system,"Segoe UI",system-ui,sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
 
   /* ── Layout ── */
-  .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
-  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 20px; }
-  .main { padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+  .shell { display: grid; grid-template-columns: 270px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 16px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
+  .main { padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
 
   /* ── Sidebar ── */
-  .logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: .02em; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-  .logo span { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; letter-spacing: 0; }
-  .section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .logo { font-size: 14px; font-weight: 700; color: var(--ok); letter-spacing: .02em; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
+  .logo span { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  .logo .tag { display: inline-block; margin-top: 6px; font-size: 10px; padding: 2px 8px; background: #1a3a1a; color: var(--ok); border: 1px solid var(--ok); border-radius: 20px; font-weight: 600; }
+  .section-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
   .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 12px; color: var(--muted); }
-  .field select, .field input[type=range] { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 13px; outline: none; }
-  .field select:focus { border-color: var(--accent); }
-  .field .range-row { display: flex; align-items: center; gap: 8px; }
-  .field input[type=range] { padding: 0; cursor: pointer; accent-color: var(--accent); }
-  .range-val { font-size: 12px; color: var(--accent); font-weight: 600; min-width: 28px; text-align: right; }
+  .field label { font-size: 11px; color: var(--muted); }
+  .field select { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 12px; outline: none; }
+  .field select:focus { border-color: var(--ok); }
+  .range-row { display: flex; align-items: center; gap: 8px; }
+  .field input[type=range] { flex: 1; cursor: pointer; accent-color: var(--ok); }
+  .range-val { font-size: 11px; color: var(--ok); font-weight: 700; min-width: 36px; text-align: right; }
   .toggle-row { display: flex; justify-content: space-between; align-items: center; }
   .toggle-row span { font-size: 12px; color: var(--muted); }
-  .toggle { position: relative; width: 36px; height: 20px; }
+  .toggle { position: relative; width: 34px; height: 18px; }
   .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider-t { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 20px; transition: .2s; }
-  .slider-t::before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .2s; }
-  input:checked + .slider-t { background: var(--accent); }
-  input:checked + .slider-t::before { transform: translateX(16px); background: white; }
+  .sl { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 18px; transition: .2s; }
+  .sl::before { content: ""; position: absolute; height: 12px; width: 12px; left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: .2s; }
+  input:checked+.sl { background: var(--ok); }
+  input:checked+.sl::before { transform: translateX(16px); background: white; }
 
-  .btn-simulate {
-    margin-top: auto; background: var(--accent); color: #0d1117; border: none;
-    border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: opacity .15s, transform .1s; letter-spacing: .02em;
-  }
-  .btn-simulate:hover { opacity: .88; }
-  .btn-simulate:active { transform: scale(.97); }
-  .btn-simulate.running { background: var(--warn); animation: pulse 1s infinite alternate; }
-  @keyframes pulse { from { opacity: 1; } to { opacity: .6; } }
+  .btn-sim { margin-top: auto; background: var(--ok); color: #0d1117; border: none; border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s, transform .1s; letter-spacing: .02em; }
+  .btn-sim:hover { opacity: .88; }
+  .btn-sim:active { transform: scale(.97); }
+  .btn-sim.running { background: var(--warn); animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from{opacity:1}to{opacity:.55} }
 
   /* ── Header ── */
-  .header { display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 18px; font-weight: 700; }
-  .header h1 span { color: var(--accent); }
-  .badges { display: flex; gap: 8px; }
-  .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; border: 1px solid; }
+  .header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .header h1 { font-size: 17px; font-weight: 700; }
+  .header h1 .sub { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; border: 1px solid; white-space: nowrap; }
   .badge.low { color: var(--ok); border-color: var(--ok); }
   .badge.medium { color: var(--warn); border-color: var(--warn); }
   .badge.high { color: var(--danger); border-color: var(--danger); }
   .badge.idle { color: var(--muted); border-color: var(--border); }
 
-  /* ── KPI Cards ── */
+  /* ── KPIs ── */
   .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .kpi .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-  .kpi .kpi-val { font-size: 28px; font-weight: 700; margin: 4px 0 2px; }
-  .kpi .kpi-sub { font-size: 11px; color: var(--muted); }
-  .kpi.danger .kpi-val { color: var(--danger); }
-  .kpi.warn .kpi-val { color: var(--warn); }
-  .kpi.ok .kpi-val { color: var(--ok); }
-  .kpi.accent .kpi-val { color: var(--accent); }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+  .kpi-val { font-size: 26px; font-weight: 800; margin: 3px 0 2px; }
+  .kpi-sub { font-size: 10px; color: var(--muted); }
+  .kpi.c-ok .kpi-val { color: var(--ok); }
+  .kpi.c-warn .kpi-val { color: var(--warn); }
+  .kpi.c-danger .kpi-val { color: var(--danger); }
+  .kpi.c-accent .kpi-val { color: var(--accent); }
 
-  /* ── Charts row ── */
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  /* ── Charts ── */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .chart-card h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
-  .chart-box { width: 100%; }
+  .chart-card h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
 
-  /* ── Event log ── */
+  /* ── Scenario cards ── */
+  .scenario-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .scenario-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .s-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; cursor: pointer; transition: border-color .15s; }
+  .s-card:hover { border-color: var(--ok); }
+  .s-card.active { border-color: var(--ok); background: #0d1f0d; }
+  .s-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+  .s-card-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .s-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
+  .s-pill.crit { background: #3f1f1f; color: var(--danger); }
+  .s-pill.high { background: #3f2f1a; color: var(--warn); }
+  .s-pill.medium { background: #1a2a3a; color: var(--accent); }
+  .s-pill.low { background: #1a3a1a; color: var(--ok); }
+  .s-prob-row { display: flex; align-items: center; gap: 8px; }
+  .s-bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .s-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+  .s-pct { font-size: 11px; font-weight: 700; min-width: 30px; text-align: right; }
+  .s-impact-row { display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .s-impact-row span strong { color: var(--text); }
+
+  /* ── Department Dependency ── */
+  .dept-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .dept-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
+  .dept-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .dept-node { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; position: relative; transition: border-color .3s, background .3s; }
+  .dept-node .dept-icon { font-size: 18px; margin-bottom: 4px; }
+  .dept-node .dept-name { font-size: 11px; font-weight: 600; color: var(--text); }
+  .dept-node .dept-score { font-size: 10px; font-weight: 700; margin-top: 3px; }
+  .dept-node.impact-crit { border-color: var(--danger); background: #1a0d0d; }
+  .dept-node.impact-high { border-color: var(--warn); background: #1a150a; }
+  .dept-node.impact-med { border-color: var(--accent); background: #0d1420; }
+  .dept-node.impact-low { border-color: var(--ok); background: #0d1a0d; }
+  .dept-node.impact-none { border-color: var(--border); }
+  .dept-cascade-label { font-size: 10px; color: var(--muted); margin-top: 10px; }
+  .cascade-chain { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .cascade-tag { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: var(--border); color: var(--muted); }
+  .cascade-tag.trigger { background: #3f1f1f; color: var(--danger); }
+
+  /* ── Cost-Benefit Analysis ── */
+  .cba-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .cba-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .cba-section h3 .cba-scenario-name { color: var(--ok); font-size: 12px; font-weight: 700; }
+  .cba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cba-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .cba-card h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 10px; }
+  .cba-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .cba-row:last-child { border-bottom: none; }
+  .cba-row .label { color: var(--muted); }
+  .cba-row .val { font-weight: 700; }
+  .cba-row .val.red { color: var(--danger); }
+  .cba-row .val.green { color: var(--ok); }
+  .cba-row .val.yellow { color: var(--warn); }
+  .cba-verdict { margin-top: 10px; padding: 10px; background: var(--card2); border-radius: 6px; font-size: 12px; line-height: 1.6; color: var(--text); border-left: 3px solid var(--ok); }
+  .cba-verdict strong { color: var(--ok); }
+  .cba-compare-chart { margin-top: 10px; }
+  .cba-bar-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+  .cba-bar-track { height: 20px; background: var(--border); border-radius: 4px; overflow: hidden; position: relative; margin-bottom: 8px; }
+  .cba-bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 700; color: white; transition: width 0.8s ease; white-space: nowrap; }
+
+  /* ── Recommendations ── */
+  .rec-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .rec-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
+  .rec-list { display: flex; flex-direction: column; gap: 8px; }
+  .rec-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; border-left: 3px solid var(--ok); }
+  .rec-item .rec-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .rec-item .rec-meta { display: flex; gap: 10px; margin-top: 4px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+  .rec-item .rec-meta span strong { color: var(--ok); }
+  .rec-item .rec-meta span.priority-high strong { color: var(--danger); }
+  .rec-item .rec-meta span.priority-med strong { color: var(--warn); }
+  .rec-item .rec-desc { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.5; }
+
+  /* ── Log ── */
   .log-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .log-card h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .log-card h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
   .log-card h3 button { font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; cursor: pointer; }
-  .log-card h3 button:hover { color: var(--text); }
-  .log-list { display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
-  .log-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 6px; background: var(--surface); border-left: 3px solid var(--border); font-size: 12px; }
+  .log-list { display: flex; flex-direction: column; gap: 5px; max-height: 160px; overflow-y: auto; }
+  .log-item { display: flex; gap: 10px; align-items: flex-start; padding: 7px 10px; border-radius: 6px; background: var(--surface); border-left: 3px solid var(--border); font-size: 11px; }
   .log-item.crit { border-left-color: var(--danger); }
   .log-item.warn { border-left-color: var(--warn); }
   .log-item.info { border-left-color: var(--accent); }
-  .log-time { color: var(--muted); white-space: nowrap; min-width: 54px; }
-  .log-msg { color: var(--text); flex: 1; }
-  .log-score { font-weight: 700; min-width: 36px; text-align: right; }
-  .log-item.crit .log-score { color: var(--danger); }
-  .log-item.warn .log-score { color: var(--warn); }
-  .log-item.info .log-score { color: var(--ok); }
-  .empty-state { color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }
+  .log-time { color: var(--muted); white-space: nowrap; min-width: 50px; }
+  .log-msg { flex: 1; }
+  .empty-state { color: var(--muted); font-size: 12px; padding: 16px 0; text-align: center; }
 
-  /* ── Radar row ── */
-  .bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
-  /* ── Risk scenarios panel ── */
-  .scenarios-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .scenarios-card h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
-  .scenario-grid { display: flex; flex-direction: column; gap: 6px; }
-  .scenario-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; background: var(--surface); border-radius: 6px; border: 1px solid var(--border); }
-  .scenario-name { font-size: 12px; font-weight: 500; }
-  .scenario-bar-wrap { flex: 1; margin: 0 10px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .scenario-bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
-  .scenario-pct { font-size: 11px; font-weight: 700; min-width: 32px; text-align: right; }
-
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
 </head>
 <body>
 <div class="shell">
 
-  <!-- ── SIDEBAR ── -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">
-      HealthCare Crisis Analytics
-      <span>Unknown Risk Factor Simulator v1.0</span>
+      Healthcare Disaster Preparedness
+      <span>Known Risk Factor Simulator v2.0</span>
+      <div class="tag">✓ ANTICIPATABLE RISKS</div>
     </div>
 
     <div>
       <div class="section-label">Hospital Profile</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;flex-direction:column;gap:9px">
         <div class="field">
           <label>Hospital Type</label>
           <select id="hospType">
@@ -161,7 +211,7 @@
           </div>
         </div>
         <div class="field">
-          <label>EHR Dependency Level</label>
+          <label>EHR Dependency</label>
           <select id="ehrDep">
             <option value="full">Fully Digital</option>
             <option value="hybrid">Hybrid</option>
@@ -172,10 +222,31 @@
     </div>
 
     <div>
+      <div class="section-label">Disaster Scenario Type</div>
+      <div class="field">
+        <select id="disasterType" onchange="updateDisasterHints()">
+          <option value="power_outage">Power Outage / Grid Failure</option>
+          <option value="hurricane">Hurricane / Tropical Storm</option>
+          <option value="wildfire">Wildfire Smoke / Evacuation</option>
+          <option value="tornado">Tornado / High-Wind Event</option>
+          <option value="flood">Flash Flood / Storm Surge</option>
+          <option value="blizzard">Blizzard / Winter Storm</option>
+          <option value="earthquake">Earthquake / Seismic Event</option>
+          <option value="pandemic">Pandemic / Mass Casualty Surge</option>
+          <option value="ransomware">Ransomware / Cyber Attack</option>
+          <option value="supply_chain">Supply Chain Disruption</option>
+          <option value="heatwave">Extreme Heat Wave</option>
+          <option value="chemical">HAZMAT / Chemical Spill</option>
+        </select>
+      </div>
+      <div id="disasterHint" style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.5;padding:8px;background:var(--card);border-radius:6px;border-left:2px solid var(--ok)"></div>
+    </div>
+
+    <div>
       <div class="section-label">Simulation Parameters</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;flex-direction:column;gap:9px">
         <div class="field">
-          <label>Unknown Factor Intensity</label>
+          <label>Event Severity (1–10)</label>
           <div class="range-row">
             <input type="range" id="intensity" min="1" max="10" value="5" oninput="document.getElementById('intensityVal').textContent=this.value" />
             <span class="range-val" id="intensityVal">5</span>
@@ -189,29 +260,33 @@
           </div>
         </div>
         <div class="toggle-row">
-          <span>Compound Events</span>
-          <label class="toggle"><input type="checkbox" id="compound" checked /><span class="slider-t"></span></label>
+          <span>Multi-Disaster Compound</span>
+          <label class="toggle"><input type="checkbox" id="compound" /><span class="sl"></span></label>
         </div>
         <div class="toggle-row">
-          <span>Include Black Swan</span>
-          <label class="toggle"><input type="checkbox" id="blackSwan" /><span class="slider-t"></span></label>
+          <span>Include Staffing Shortfall</span>
+          <label class="toggle"><input type="checkbox" id="staffShortfall" checked /><span class="sl"></span></label>
         </div>
         <div class="toggle-row">
-          <span>Cyber Threat Layer</span>
-          <label class="toggle"><input type="checkbox" id="cyberLayer" checked /><span class="slider-t"></span></label>
+          <span>EHR System Downtime</span>
+          <label class="toggle"><input type="checkbox" id="ehrDown" checked /><span class="sl"></span></label>
         </div>
       </div>
     </div>
 
-    <button class="btn-simulate" id="simBtn" onclick="runSimulation()">▶ Run Simulation</button>
+    <button class="btn-sim" id="simBtn" onclick="runSimulation()">▶ Run Simulation</button>
   </aside>
 
-  <!-- ── MAIN ── -->
+  <!-- MAIN -->
   <main class="main">
 
     <!-- Header -->
     <div class="header">
-      <h1><span>Unknown Risk</span> Factor Simulator</h1>
+      <div>
+        <h1>Disaster Preparedness Simulator
+          <span class="sub">Anticipatable known-risk scenarios — plan, mitigate, and cost-justify responses</span>
+        </h1>
+      </div>
       <div class="badges">
         <span class="badge idle" id="riskBadge">IDLE</span>
         <span class="badge idle" id="simBadge">NO SIMULATION</span>
@@ -220,65 +295,84 @@
 
     <!-- KPIs -->
     <div class="kpi-row">
-      <div class="kpi accent">
+      <div class="kpi c-ok">
         <div class="kpi-label">Overall Risk Score</div>
         <div class="kpi-val" id="kpiRisk">—</div>
         <div class="kpi-sub">out of 100</div>
       </div>
-      <div class="kpi warn">
+      <div class="kpi c-warn">
         <div class="kpi-label">Departments Affected</div>
         <div class="kpi-val" id="kpiDepts">—</div>
-        <div class="kpi-sub">of 8 total</div>
+        <div class="kpi-sub">of 10 total</div>
       </div>
-      <div class="kpi danger">
-        <div class="kpi-label">Est. Financial Impact</div>
+      <div class="kpi c-danger">
+        <div class="kpi-label">Est. Financial Loss</div>
         <div class="kpi-val" id="kpiFinancial">—</div>
-        <div class="kpi-sub">USD (simulated)</div>
+        <div class="kpi-sub">if unmitigated</div>
       </div>
-      <div class="kpi ok">
-        <div class="kpi-label">Recovery Time Est.</div>
+      <div class="kpi c-accent">
+        <div class="kpi-label">Recovery Time</div>
         <div class="kpi-val" id="kpiRecovery">—</div>
         <div class="kpi-sub">days to full ops</div>
       </div>
     </div>
 
-    <!-- Charts Row -->
+    <!-- Charts -->
     <div class="charts-row">
       <div class="chart-card">
-        <h3>Department Impact Scores</h3>
-        <div class="chart-box" id="deptChart" style="height:220px"></div>
+        <h3>Department Impact Scores (Known Risk)</h3>
+        <div id="deptChart" style="height:220px"></div>
       </div>
       <div class="chart-card">
-        <h3>Risk Timeline (Simulated Hours)</h3>
-        <div class="chart-box" id="timelineChart" style="height:220px"></div>
+        <h3>Risk Timeline — 72-Hour Response Window</h3>
+        <div id="timelineChart" style="height:220px"></div>
       </div>
     </div>
 
-    <!-- Bottom Row -->
-    <div class="bottom-row">
-      <!-- Radar -->
-      <div class="chart-card">
-        <h3>Risk Profile Radar</h3>
-        <div class="chart-box" id="radarChart" style="height:220px"></div>
+    <!-- Department Dependency Network -->
+    <div class="dept-section">
+      <h3 id="deptDepTitle">🏥 Department Dependency Network — select a scenario and run simulation to see cascade</h3>
+      <div class="dept-grid" id="deptGrid">
+        <!-- filled by JS -->
       </div>
-
-      <!-- Scenarios -->
-      <div class="scenarios-card" style="grid-column: span 1;">
-        <h3>Unknown Scenario Probabilities</h3>
-        <div class="scenario-grid" id="scenarioGrid">
-          <div class="empty-state">Run a simulation to generate scenarios</div>
-        </div>
+      <div id="cascadeInfo" style="margin-top:12px;display:none">
+        <div class="dept-cascade-label">Cascade chain from trigger event:</div>
+        <div class="cascade-chain" id="cascadeChain"></div>
       </div>
+    </div>
 
-      <!-- Log -->
-      <div class="log-card">
-        <h3>
-          Simulation Event Log
-          <button onclick="clearLog()">Clear</button>
-        </h3>
-        <div class="log-list" id="logList">
-          <div class="empty-state">No events yet</div>
-        </div>
+    <!-- Scenario Cards -->
+    <div class="scenario-section">
+      <h3>
+        Known Disaster Scenarios — Probability &amp; Impact
+        <span style="font-size:10px;color:var(--ok);font-weight:600">Click a card to focus cost-benefit analysis</span>
+      </h3>
+      <div class="scenario-grid" id="scenarioGrid">
+        <div class="empty-state" style="grid-column:span 2">Run a simulation to generate scenarios</div>
+      </div>
+    </div>
+
+    <!-- Cost-Benefit Analysis -->
+    <div class="cba-section">
+      <h3>💰 Mitigation Cost-Benefit Analysis — <span class="cba-scenario-name" id="cbaTitle">Select a scenario above</span></h3>
+      <div id="cbaContent">
+        <div class="empty-state">Run a simulation and click a scenario card to load cost-benefit analysis</div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="rec-section">
+      <h3>📋 Prioritized Preparedness Recommendations</h3>
+      <div class="rec-list" id="recList">
+        <div class="empty-state">Run a simulation to generate recommendations</div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="log-card">
+      <h3>Simulation Event Log <button onclick="clearLog()">Clear</button></h3>
+      <div class="log-list" id="logList">
+        <div class="empty-state">No events yet</div>
       </div>
     </div>
 
@@ -286,60 +380,327 @@
 </div>
 
 <script>
-// ── ECharts instances ──
-let deptChart, timelineChart, radarChart;
+let deptChart, timelineChart;
 let simRunning = false;
 let simCount = 0;
+let activeScenarioIdx = null;
+let lastSimData = null;
 
-const DEPARTMENTS = ['Emergency','ICU','Surgery','Pharmacy','Radiology','Oncology','Maternity','IT/Network'];
-const RADAR_DIMS = ['Operational','Financial','Clinical','Cyber','Infrastructure','Supply Chain'];
-
-const UNKNOWN_SCENARIOS = [
-  { name: 'Atypical Pathogen Surge', baseProb: 0.12, color: '#f85149' },
-  { name: 'AI System Hallucination', baseProb: 0.08, color: '#bc8cff' },
-  { name: 'Supply Chain Crypto-Seizure', baseProb: 0.15, color: '#d29922' },
-  { name: 'Solar Flare Blackout', baseProb: 0.05, color: '#58a6ff' },
-  { name: 'Mass Psychogenic Event', baseProb: 0.07, color: '#3fb950' },
-  { name: 'Cascading HVAC Failure', baseProb: 0.18, color: '#ffa657' },
-  { name: 'Credential Deepfake Attack', baseProb: 0.11, color: '#f778ba' },
-  { name: 'Undocumented Drug Interaction', baseProb: 0.09, color: '#79c0ff' },
+const DEPARTMENTS = [
+  { id:'ED',    name:'Emergency',      icon:'🚨' },
+  { id:'ICU',   name:'ICU / Critical', icon:'❤️' },
+  { id:'OR',    name:'Surgery / OR',   icon:'🔪' },
+  { id:'EHR',   name:'EHR / IT',       icon:'💻' },
+  { id:'PHARM', name:'Pharmacy',       icon:'💊' },
+  { id:'RAD',   name:'Radiology',      icon:'🩻' },
+  { id:'LAB',   name:'Laboratory',     icon:'🧪' },
+  { id:'POWER', name:'Power / Utilities', icon:'⚡' },
+  { id:'SUPPLY',name:'Supply Chain',   icon:'📦' },
+  { id:'ADMIN', name:'Administration', icon:'🗂️' },
 ];
+
+// Disaster type configs — which departments are primary + cascade targets
+const DISASTER_CONFIG = {
+  power_outage: {
+    label: 'Power Outage / Grid Failure',
+    hint: 'Planned for via generator testing, UPS systems, and load-shedding protocols. Response playbooks exist.',
+    primary: ['POWER'],
+    cascade: ['ED','ICU','OR','EHR','RAD','LAB','PHARM'],
+    baseImpact: { POWER:92, ED:80, ICU:85, OR:78, EHR:88, RAD:75, LAB:70, PHARM:60, SUPPLY:30, ADMIN:40 },
+    mitigation: {
+      title: 'Generator Upgrade vs. Unmitigated Power Loss',
+      lossLabel: 'Unmitigated power outage loss (48h)',
+      solutions: [
+        { name:'Upgrade backup generators (200kW→800kW)', cost_base:1.2, roi_factor:4.5, timeframe:'6–12 months', priority:'high', desc:'Covers full ICU + OR load. Eliminates surgical diversions and life-support failures.' },
+        { name:'Install UPS on critical medical equipment', cost_base:0.3, roi_factor:6, timeframe:'2–4 months', priority:'high', desc:'Protects imaging, ventilators, and infusion pumps from brief outages and surges.' },
+        { name:'Power microzonation plan + load-shedding SOP', cost_base:0.05, roi_factor:12, timeframe:'1 month', priority:'med', desc:'Prioritizes generator power to life-critical departments. No new hardware needed.' },
+      ]
+    },
+    recs: [
+      { title:'Test full-load generator capacity quarterly', priority:'high', cost:'$5K/yr', saving:'$200K+ per avoided diversion', desc:'Include simultaneous OR + ICU + imaging at full census. Many hospitals discover capacity gaps only during real events.' },
+      { title:'Install N+1 redundancy for critical circuit panels', priority:'high', cost:'$150K–400K', saving:'$2M+ per extended outage avoided', desc:'Each critical unit should have dual-feed capability from separate generator circuits.' },
+      { title:'Establish fuel reserve + priority delivery contract', priority:'med', cost:'$20K/yr retainer', saving:'$500K per 72h outage', desc:'Most hospitals run out of diesel in 48 hours. Contract with a fuel supplier guarantees 72-hour delivery SLA.' },
+    ]
+  },
+  hurricane: {
+    label: 'Hurricane / Tropical Storm',
+    hint: 'Forecasted 3–7 days in advance. National Hurricane Center provides structured cone projections. Hospitals have established hurricane protocols.',
+    primary: ['ED','SUPPLY','POWER'],
+    cascade: ['ICU','OR','LAB','RAD','PHARM','EHR'],
+    baseImpact: { ED:88, SUPPLY:80, POWER:75, ICU:70, OR:65, LAB:60, RAD:55, PHARM:70, EHR:50, ADMIN:60 },
+    mitigation: {
+      title: 'Hurricane Preparedness vs. Unmitigated Storm Damage',
+      lossLabel: 'Unmitigated hurricane damage + surge costs',
+      solutions: [
+        { name:'Hurricane-rated window film + door sealing', cost_base:0.15, roi_factor:8, timeframe:'2–3 months', priority:'high', desc:'Prevents envelope breach that leads to water damage in clinical spaces. ROI realized on first avoided water intrusion event.' },
+        { name:'90-day supply reserve + vendor pre-positioning', cost_base:0.4, roi_factor:5, timeframe:'Ongoing', priority:'high', desc:'Most storm-related financial loss is from supply disruption, not structural damage. Pre-positioned contracts prevent spot-market price gouging.' },
+        { name:'Patient evacuation transport pre-agreement', cost_base:0.08, roi_factor:7, timeframe:'1 month', priority:'med', desc:'MOU with ground and air transport companies. Tiered evacuation protocol by patient acuity.' },
+      ]
+    },
+    recs: [
+      { title:'Activate hurricane incident command 72h before landfall', priority:'high', cost:'Staff overtime (~$30K)', saving:'$3M+ in coordinated response', desc:'Hospitals that activate ICS early reduce ad-hoc decision-making during the event by 60%.' },
+      { title:'Harden pharmacy + blood bank cold storage with backup chillers', priority:'high', cost:'$80K–200K', saving:'$1M+ in product loss avoidance', desc:'Medication and blood product spoilage is frequently the largest loss category in post-hurricane audits.' },
+      { title:'Pre-contract security firm for post-storm facility protection', priority:'med', cost:'$15K/event', saving:'$500K in theft/liability avoidance', desc:'Power outages frequently lead to facility security breaches. Pre-contracted guards deploy faster than ad-hoc calls.' },
+    ]
+  },
+  wildfire: {
+    label: 'Wildfire Smoke / Evacuation',
+    hint: 'Wildfire risk indices, Red Flag Warnings, and satellite smoke tracking provide days of advance notice. Hospital evacuation plans are required by TJC.',
+    primary: ['ED','SUPPLY','POWER'],
+    cascade: ['ICU','OR','RAD','LAB','PHARM','EHR','ADMIN'],
+    baseImpact: { ED:82, SUPPLY:65, POWER:60, ICU:78, OR:70, RAD:50, LAB:55, PHARM:55, EHR:40, ADMIN:65 },
+    mitigation: {
+      title: 'Wildfire / Smoke Preparedness vs. Evacuation Losses',
+      lossLabel: 'Unmitigated wildfire evacuation / smoke event cost',
+      solutions: [
+        { name:'MERV-16 HVAC filtration upgrade', cost_base:0.2, roi_factor:7, timeframe:'3–6 months', priority:'high', desc:'Keeps PM2.5 out of clinical spaces during prolonged smoke events, preventing respiratory surge and HVAC downtime.' },
+        { name:'Tiered patient evacuation protocol + receiving agreements', cost_base:0.1, roi_factor:9, timeframe:'2 months', priority:'high', desc:'Clear criteria for which patients move first. MOU with 3+ receiving hospitals. Avoids chaotic evacuation decisions.' },
+        { name:'Wildfire defensible space landscaping', cost_base:0.25, roi_factor:4, timeframe:'6 months', priority:'med', desc:'Removes ignition pathways within 100ft of building. Required for insurance in many western states.' },
+      ]
+    },
+    recs: [
+      { title:'Establish patient transfer SLA with regional trauma network', priority:'high', cost:'$10K legal + annual coordination', saving:'$5M+ per avoided evacuation failure', desc:'TJC requires evacuation planning; most plans lack confirmed receiving capacity agreements.' },
+      { title:'Install smoke/air quality sensors with automated HVAC isolation', priority:'high', cost:'$40K–120K', saving:'$300K per avoided HVAC contamination event', desc:'Early smoke detection triggers automatic outside air damper closure, protecting internal air quality for hours longer.' },
+      { title:'Annual full-scale wildfire evacuation drill', priority:'med', cost:'$15K–25K/drill', saving:'$2M+ in reduced evacuation chaos', desc:'Drills reveal staff gaps in patient transport prioritization and EHR portability.' },
+    ]
+  },
+  tornado: {
+    label: 'Tornado / High-Wind Event',
+    hint: 'NWS tornado watches provide 15–45 min warning. Sirens and NOAA radio are standard. Shelter-in-place protocols are well-established for hospitals.',
+    primary: ['ED','POWER','SUPPLY'],
+    cascade: ['OR','ICU','RAD','LAB','EHR','ADMIN'],
+    baseImpact: { ED:85, POWER:80, SUPPLY:60, OR:70, ICU:72, RAD:65, LAB:55, EHR:60, PHARM:50, ADMIN:55 },
+    mitigation: {
+      title: 'Tornado Shelter & Structural Reinforcement vs. Damage Costs',
+      lossLabel: 'Unmitigated tornado structural + operational damage',
+      solutions: [
+        { name:'Reinforce interior shelter zones (IDF rooms + stairwells)', cost_base:0.3, roi_factor:6, timeframe:'4–8 months', priority:'high', desc:'Designated interior rooms are cost-effective shelters. Minimal structural cost with large life-safety benefit.' },
+        { name:'Install automatic storm shutters on ground-floor windows', cost_base:0.4, roi_factor:5, timeframe:'6 months', priority:'high', desc:'Glass breach is the primary injury vector in tornado events at hospitals.' },
+        { name:'Tornado ICS drill with patient shelter-in-place exercise', cost_base:0.03, roi_factor:15, timeframe:'1 month', priority:'high', desc:'Most ROI per dollar spent. Staff confusion during tornado events causes more harm than the wind itself.' },
+      ]
+    },
+    recs: [
+      { title:'Map all interior safe zones and post clearly on every floor', priority:'high', cost:'$2K–5K', saving:'Life-safety + regulatory compliance', desc:'ASHE and TJC require mapped shelter-in-place routes for all patient care areas.' },
+      { title:'Install weather alert integration with overhead PA system', priority:'med', cost:'$10K–30K', saving:'Injury prevention + liability reduction', desc:'Automated NWS watch/warning → PA announcement reduces dependency on manual staff activation.' },
+    ]
+  },
+  flood: {
+    label: 'Flash Flood / Storm Surge',
+    hint: 'FEMA 100-year and 500-year floodplain maps define known flood risk. NOAA river-gauge networks provide hours to days of advance flood warnings.',
+    primary: ['POWER','SUPPLY','LAB'],
+    cascade: ['ED','ICU','OR','PHARM','RAD','EHR','ADMIN'],
+    baseImpact: { POWER:88, SUPPLY:82, LAB:75, ED:70, ICU:65, OR:72, PHARM:78, RAD:60, EHR:55, ADMIN:50 },
+    mitigation: {
+      title: 'Flood Mitigation Infrastructure vs. Flood Damage',
+      lossLabel: 'Unmitigated flood damage (ground-floor systems)',
+      solutions: [
+        { name:'Elevate critical utilities (generators, MDF, pharmacy) above flood line', cost_base:0.5, roi_factor:8, timeframe:'12–18 months', priority:'high', desc:'Ground-floor critical systems are the most common cause of extended hospital closures after flooding.' },
+        { name:'Install automatic flood barriers + sump pump upgrade', cost_base:0.2, roi_factor:7, timeframe:'6 months', priority:'high', desc:'Passive flood doors and high-capacity sump systems can prevent 80% of basement flooding events.' },
+        { name:'Relocate ground-floor medication and supply storage', cost_base:0.1, roi_factor:10, timeframe:'3 months', priority:'med', desc:'Pharmacy and central supply on upper floors eliminates the most common flood loss category.' },
+      ]
+    },
+    recs: [
+      { title:'Commission FEMA Level III flood risk assessment', priority:'high', cost:'$30K–80K one-time', saving:'$5M+ in avoided infrastructure loss', desc:'Many hospitals discover they are in unmapped floodplains. Required for FEMA BRIC grant eligibility.' },
+      { title:'Establish water intrusion monitoring with 24/7 alert routing', priority:'high', cost:'$20K–50K', saving:'$500K per prevented equipment flood loss', desc:'Early detection of water intrusion (1–2 hours before flooding) enables equipment relocation and system isolation.' },
+    ]
+  },
+  blizzard: {
+    label: 'Blizzard / Winter Storm',
+    hint: 'NWS Winter Storm Warnings issued 12–36 hours in advance. Hospital winter storm protocols are standard HICS annexes with well-known response triggers.',
+    primary: ['SUPPLY','ADMIN'],
+    cascade: ['ED','ICU','OR','PHARM','POWER','EHR','RAD','LAB'],
+    baseImpact: { SUPPLY:75, ADMIN:70, ED:68, ICU:62, OR:55, PHARM:65, POWER:58, EHR:45, RAD:50, LAB:48 },
+    mitigation: {
+      title: 'Winter Storm Preparedness vs. Surge + Staffing Costs',
+      lossLabel: 'Unmitigated blizzard staffing + supply disruption cost',
+      solutions: [
+        { name:'Shelter-in-place compensation + on-site staff lodging protocol', cost_base:0.15, roi_factor:6, timeframe:'1 month policy', priority:'high', desc:'Incentivized shelter-in-place for key clinical staff prevents dangerous staffing falls during 48-72h events.' },
+        { name:'Increase on-site supply reserves to 7-day minimum', cost_base:0.35, roi_factor:5, timeframe:'Ongoing', priority:'high', desc:'Most hospitals carry 48-72h supply. Blizzards routinely close roads for 3–5 days. 7-day reserve eliminates supply crisis.' },
+        { name:'Generator fuel pre-contract with helicopter delivery clause', cost_base:0.08, roi_factor:9, timeframe:'2 months', priority:'high', desc:'Ground-based fuel delivery impossible during heavy snowfall. Air-delivery contract ensures fuel continuity.' },
+      ]
+    },
+    recs: [
+      { title:'Activate 72h weather watch protocol 48h before predicted storm', priority:'high', cost:'Staff overtime + meals (~$20K)', saving:'$2M+ per avoided critical staffing failure', desc:'Early activation allows staggered staff arrival and voluntary stay-overs before roads become impassable.' },
+      { title:'Maintain staff housing agreement with nearby hotel', priority:'med', cost:'$10K/yr retainer', saving:'$1M+ per multi-day event', desc:'Guarantees block of rooms near hospital for clinical staff during declared weather emergencies.' },
+    ]
+  },
+  earthquake: {
+    label: 'Earthquake / Seismic Event',
+    hint: 'USGS ShakeAlert and regional seismic monitoring networks provide seconds-to-minutes of advance warning. Post-event response protocols are well-established.',
+    primary: ['POWER','OR','LAB'],
+    cascade: ['ED','ICU','RAD','EHR','PHARM','SUPPLY','ADMIN'],
+    baseImpact: { POWER:85, OR:80, LAB:78, ED:88, ICU:75, RAD:82, EHR:65, PHARM:60, SUPPLY:55, ADMIN:50 },
+    mitigation: {
+      title: 'Seismic Retrofit vs. Earthquake Structural Damage',
+      lossLabel: 'Unmitigated earthquake damage + closure costs',
+      solutions: [
+        { name:'Seismic bracing for medical gas systems + imaging equipment', cost_base:0.4, roi_factor:7, timeframe:'6–12 months', priority:'high', desc:'Unbraced gas lines and imaging equipment are the primary injury and downtime vectors in hospital earthquakes.' },
+        { name:'Non-structural seismic mitigation (anchoring, shelf restraints)', cost_base:0.1, roi_factor:12, timeframe:'2–4 months', priority:'high', desc:'Highest ROI seismic investment. Prevents medication and supply avalanche, the most common earthquake-related ER overload cause.' },
+        { name:'Structural seismic upgrade for pre-1990 building wings', cost_base:3.0, roi_factor:3, timeframe:'18–36 months', priority:'med', desc:'Expensive but necessary for life-safety compliance in Seismic Zone 3+. Required for OSHPD/HCAI compliance in CA.' },
+      ]
+    },
+    recs: [
+      { title:'Commission ASCE 41-based seismic vulnerability assessment', priority:'high', cost:'$40K–100K', saving:'$10M+ in avoided structural closure costs', desc:'Required to identify life-safety deficiencies before an event. Unlocks state/FEMA mitigation grant funding.' },
+      { title:'Install medical gas automatic seismic shutoff valves', priority:'high', cost:'$30K–80K', saving:'$1M+ in fire/explosion risk + OR downtime', desc:'Gas line rupture during earthquakes causes secondary fires. Automatic shutoffs are low-cost, high-impact.' },
+    ]
+  },
+  pandemic: {
+    label: 'Pandemic / Mass Casualty Surge',
+    hint: 'WHO, CDC, and state epidemiological surveillance provide weeks to months of advance signal for emerging pandemic threats. HICS surge protocols exist.',
+    primary: ['ED','ICU','SUPPLY'],
+    cascade: ['OR','LAB','PHARM','RAD','EHR','ADMIN','POWER'],
+    baseImpact: { ED:92, ICU:88, SUPPLY:85, OR:65, LAB:80, PHARM:75, RAD:60, EHR:70, ADMIN:68, POWER:40 },
+    mitigation: {
+      title: 'Pandemic Surge Preparedness vs. COVID-Scale Response Costs',
+      lossLabel: 'Unmitigated pandemic surge financial impact',
+      solutions: [
+        { name:'Maintain surge ventilator + PPE 90-day strategic reserve', cost_base:0.5, roi_factor:8, timeframe:'Ongoing', priority:'high', desc:'COVID demonstrated that spot-market PPE during a surge costs 10–50x normal. Strategic reserves eliminate this cost.' },
+        { name:'Install negative-pressure flex isolation suite (20-bed expandable)', cost_base:0.8, roi_factor:5, timeframe:'6–12 months', priority:'high', desc:'Modular isolation capacity allows cohorting of infectious surge patients without building closure.' },
+        { name:'Cross-train clinical staff in adjacent care roles + floating pool', cost_base:0.2, roi_factor:7, timeframe:'Ongoing', priority:'high', desc:'Cross-trained staff reduce surge labor costs by 40% versus agency travel nurses during declared emergencies.' },
+      ]
+    },
+    recs: [
+      { title:'Establish mutual aid compact with regional hospital coalition', priority:'high', cost:'$15K–30K/yr coordination', saving:'$20M+ per pandemic surge event', desc:'Coordinated patient load-balancing across a region avoids any single hospital hitting 150%+ capacity.' },
+      { title:'Stockpile antiviral treatment + broad-spectrum antibiotic supply', priority:'high', cost:'$100K–300K/yr reserve', saving:'$5M+ in avoided critical shortage premium', desc:'Formulary reserves for the top 10 surge-critical drugs eliminate pharmacy crisis scenarios.' },
+    ]
+  },
+  ransomware: {
+    label: 'Ransomware / Cyber Attack',
+    hint: 'Threat intelligence feeds, vendor security advisories, and patch management programs provide advance warning of active campaigns. HISAC bulletins are publicly available.',
+    primary: ['EHR'],
+    cascade: ['ED','ICU','OR','PHARM','LAB','RAD','ADMIN','SUPPLY'],
+    baseImpact: { EHR:95, ED:82, ICU:78, OR:72, PHARM:85, LAB:75, RAD:68, ADMIN:70, SUPPLY:50, POWER:30 },
+    mitigation: {
+      title: 'Cyber Defense Investment vs. Ransomware Attack Cost',
+      lossLabel: 'Average ransomware attack impact (recovery + ransom + diversion)',
+      solutions: [
+        { name:'Air-gapped EHR backup with 4-hour recovery SLA', cost_base:0.2, roi_factor:15, timeframe:'3–6 months', priority:'high', desc:'Most ransomware leverage is from lack of backups. Air-gapped backups eliminate ransom payment as the only option.' },
+        { name:'24/7 SOC + EDR deployment across all clinical endpoints', cost_base:0.4, roi_factor:10, timeframe:'4–6 months', priority:'high', desc:'Early detection reduces attacker dwell time from industry average 200 days to <24 hours, limiting blast radius.' },
+        { name:'Mandatory quarterly phishing + social engineering training', cost_base:0.05, roi_factor:20, timeframe:'Ongoing', priority:'high', desc:'85% of ransomware attacks begin with phishing. Training reduces click-through rate from ~25% to <3%.' },
+      ]
+    },
+    recs: [
+      { title:'Implement network micro-segmentation to isolate clinical systems', priority:'high', cost:'$150K–400K', saving:'$10M+ per prevented full-network compromise', desc:'Lateral movement is how ransomware spreads from one workstation to all 3,000. Segmentation contains blast radius.' },
+      { title:'Run quarterly EHR downtime drills with paper-based fallback', priority:'high', cost:'$10K–20K/drill', saving:'$3M+ per shorter downtime event', desc:'Staff who have never used downtime procedures take 4–6x longer to adapt during a real event.' },
+    ]
+  },
+  supply_chain: {
+    label: 'Supply Chain Disruption',
+    hint: 'GPO alerts, FDA shortage database, vendor lead-time signals, and geopolitical monitoring all provide weeks to months of advance supply disruption warning.',
+    primary: ['SUPPLY','PHARM'],
+    cascade: ['ICU','OR','ED','LAB','RAD','ADMIN'],
+    baseImpact: { SUPPLY:88, PHARM:82, ICU:70, OR:75, ED:65, LAB:60, RAD:50, ADMIN:55, EHR:30, POWER:20 },
+    mitigation: {
+      title: 'Supply Diversification vs. Shortage Procurement Costs',
+      lossLabel: 'Unmitigated supply shortage (spot market + diversion)',
+      solutions: [
+        { name:'Dual-source contracts for top 50 critical supply items', cost_base:0.15, roi_factor:8, timeframe:'2–4 months', priority:'high', desc:'Sole-source contracts are the primary supply chain vulnerability. Dual-source for critical items eliminates 90% of shortage risk.' },
+        { name:'Build 90-day on-site reserve for critical consumables', cost_base:0.6, roi_factor:6, timeframe:'Ongoing', priority:'high', desc:'Most financial loss in supply disruptions is spot-market premiums (3–10x normal price). Reserve eliminates this exposure.' },
+        { name:'Join regional hospital supply cooperative', cost_base:0.05, roi_factor:12, timeframe:'1–3 months', priority:'med', desc:'Cooperatives provide collective bargaining during shortages and shared reserve inventory pooling.' },
+      ]
+    },
+    recs: [
+      { title:'Implement FDA Drug Shortage Database monitoring with weekly alert', priority:'high', cost:'$0 (FDA tool) + 2h/wk staff time', saving:'$2M+ per avoided critical drug shortage', desc:'Most drug shortages are predictable 60–90 days in advance. Early identification enables substitution rather than crisis-buying.' },
+      { title:'Map full supply chain to country-of-origin for top 100 items', priority:'med', cost:'$20K–50K one-time audit', saving:'$1M+ in resilience planning', desc:'Most hospitals discovered during COVID that >80% of critical supplies came from 2–3 countries. Mapping enables diversification.' },
+    ]
+  },
+  heatwave: {
+    label: 'Extreme Heat Wave',
+    hint: 'NWS Excessive Heat Warnings are issued 48–72 hours in advance. Heat emergency response protocols for hospitals are well-established by ASPR and FEMA.',
+    primary: ['ED','POWER'],
+    cascade: ['ICU','PHARM','LAB','SUPPLY','OR','RAD','EHR','ADMIN'],
+    baseImpact: { ED:85, POWER:78, ICU:72, PHARM:65, LAB:58, SUPPLY:50, OR:60, RAD:55, EHR:40, ADMIN:45 },
+    mitigation: {
+      title: 'Heat Resilience Infrastructure vs. Heat Wave Response Costs',
+      lossLabel: 'Unmitigated heat wave surge + medication spoilage cost',
+      solutions: [
+        { name:'Redundant HVAC chiller + cooling tower backup', cost_base:0.6, roi_factor:5, timeframe:'6–12 months', priority:'high', desc:'Primary chiller failure during peak heat is the most common heat-related hospital emergency. N+1 redundancy is critical.' },
+        { name:'Medication storage temperature monitoring + backup chillers', cost_base:0.15, roi_factor:9, timeframe:'2–4 months', priority:'high', desc:'Pharmacy temperature excursion during heat events destroys temperature-sensitive medication inventories worth $200K–$1M.' },
+        { name:'Community heat-vulnerable patient outreach protocol', cost_base:0.05, roi_factor:7, timeframe:'1 month', priority:'med', desc:'Proactive outreach to dialysis and heart failure patients during heat events reduces ED surge by 20–35%.' },
+      ]
+    },
+    recs: [
+      { title:'Establish community cooling center referral network', priority:'high', cost:'$5K coordination + signage', saving:'$500K+ per 10-day heat event in surge reduction', desc:'Hospitals that partner with cooling centers divert 15–30% of heat-related ED visits to community settings.' },
+      { title:'Annual HVAC capacity stress test at peak summer load', priority:'high', cost:'$10K–20K/yr', saving:'$3M+ per avoided chiller failure during heatwave', desc:'Chiller failures discovered in-season cost 5–10x more to respond to than those identified in spring testing.' },
+    ]
+  },
+  chemical: {
+    label: 'HAZMAT / Chemical Spill',
+    hint: 'CAMEO/ALOHA, NRC hazmat reporting system, and regional hazmat coordinator networks provide structured advance warning and response resources.',
+    primary: ['ED','SUPPLY'],
+    cascade: ['ICU','OR','LAB','PHARM','RAD','EHR','POWER','ADMIN'],
+    baseImpact: { ED:90, SUPPLY:65, ICU:72, OR:60, LAB:70, PHARM:55, RAD:50, EHR:45, POWER:55, ADMIN:60 },
+    mitigation: {
+      title: 'HAZMAT Preparedness vs. Chemical Surge Response Costs',
+      lossLabel: 'Unmitigated HAZMAT event (decon + treatment + liability)',
+      solutions: [
+        { name:'Install outdoor decontamination corridor + warm zone tent', cost_base:0.12, roi_factor:10, timeframe:'2–4 months', priority:'high', desc:'Contaminated patients entering the ED without decontamination contaminates the entire department. Outdoor decon prevents this.' },
+        { name:'Stock antidote cache for top-5 regional chemical threats', cost_base:0.08, roi_factor:12, timeframe:'1–2 months', priority:'high', desc:'Antidotes for region-specific threats (e.g., organophosphates near agriculture, cyanide near industrial) save lives and reduce ICU days.' },
+        { name:'Joint HAZMAT drill with regional fire department', cost_base:0.03, roi_factor:15, timeframe:'Annual', priority:'high', desc:'Most HAZMAT response failures are coordination failures between hospital and fire department. Drills resolve these gaps cheaply.' },
+      ]
+    },
+    recs: [
+      { title:'Identify all chemical facilities within 5 miles + worst-case plume map', priority:'high', cost:'$10K–20K planning', saving:'Lives + $5M+ in liability avoidance', desc:'LEPC right-to-know data is free. Knowing what chemicals are nearby drives antidote stocking and notification protocol design.' },
+      { title:'Establish CHEMTREC 24/7 hotline integration with ED notification', priority:'med', cost:'$0 (free service)', saving:'30+ min faster clinical response per event', desc:'CHEMTREC provides real-time chemical hazard data. Many EDs are unaware this service exists.' },
+    ]
+  },
+};
+
+const DISASTER_HINTS_DEFAULT = 'This disaster type is well-characterized in emergency management literature with established response protocols.';
+
+function updateDisasterHints() {
+  const type = document.getElementById('disasterType').value;
+  const cfg = DISASTER_CONFIG[type];
+  document.getElementById('disasterHint').textContent = cfg ? cfg.hint : DISASTER_HINTS_DEFAULT;
+}
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
+function fmt$(v) { return v>=1e9?'$'+(v/1e9).toFixed(1)+'B':v>=1e6?'$'+(v/1e6).toFixed(1)+'M':'$'+Math.round(v/1000)+'K'; }
 
 function initCharts() {
   deptChart = echarts.init(document.getElementById('deptChart'), 'dark');
   timelineChart = echarts.init(document.getElementById('timelineChart'), 'dark');
-  radarChart = echarts.init(document.getElementById('radarChart'), 'dark');
 
-  // Dept chart placeholder
   deptChart.setOption({
     backgroundColor: 'transparent',
     xAxis: { type: 'value', axisLabel: { color: '#8b949e' }, splitLine: { lineStyle: { color: '#30363d' } }, max: 100 },
-    yAxis: { type: 'category', data: DEPARTMENTS, axisLabel: { color: '#8b949e', fontSize: 11 } },
-    grid: { left: 90, right: 20, top: 10, bottom: 20 },
-    series: [{ type: 'bar', data: Array(8).fill(0), itemStyle: { color: '#30363d', borderRadius: 3 } }],
+    yAxis: { type: 'category', data: DEPARTMENTS.map(d=>d.name), axisLabel: { color: '#8b949e', fontSize: 10 } },
+    grid: { left: 100, right: 20, top: 10, bottom: 20 },
+    series: [{ type: 'bar', data: Array(10).fill(0), itemStyle: { color: '#30363d', borderRadius: 3 } }],
     tooltip: { trigger: 'axis' }
   });
 
   timelineChart.setOption({
     backgroundColor: 'transparent',
-    xAxis: { type: 'category', data: Array.from({length: 24}, (_, i) => `H${i+1}`), axisLabel: { color: '#8b949e', fontSize: 10 }, splitLine: { show: false } },
+    xAxis: { type: 'category', data: ['0h','4h','8h','12h','16h','20h','24h','30h','36h','42h','48h','54h','60h','66h','72h'], axisLabel: { color: '#8b949e', fontSize: 10 }, splitLine: { show: false } },
     yAxis: { type: 'value', min: 0, max: 100, axisLabel: { color: '#8b949e' }, splitLine: { lineStyle: { color: '#30363d' } } },
-    grid: { left: 40, right: 16, top: 10, bottom: 28 },
-    series: [{ type: 'line', data: Array(24).fill(null), smooth: true, symbol: 'none', areaStyle: { opacity: .15 }, lineStyle: { color: '#58a6ff', width: 2 }, itemStyle: { color: '#58a6ff' } }],
+    grid: { left: 40, right: 16, top: 14, bottom: 28 },
+    legend: { textStyle: { color: '#8b949e', fontSize: 10 }, top: 0 },
+    series: [
+      { name:'Risk Level', type: 'line', data: Array(15).fill(null), smooth: true, symbol: 'none', lineStyle: { color: '#3fb950', width: 2 }, areaStyle: { color: { type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#3fb95044'},{offset:1,color:'#3fb95005'}] } } },
+      { name:'Response Capacity', type: 'line', data: Array(15).fill(null), smooth: true, symbol: 'none', lineStyle: { color: '#58a6ff', width: 2, type:'dashed' } }
+    ],
     tooltip: { trigger: 'axis' }
   });
 
-  radarChart.setOption({
-    backgroundColor: 'transparent',
-    radar: { indicator: RADAR_DIMS.map(n => ({ name: n, max: 100 })), axisName: { color: '#8b949e', fontSize: 10 }, splitLine: { lineStyle: { color: '#30363d' } }, splitArea: { show: false } },
-    series: [{ type: 'radar', data: [{ value: Array(6).fill(0), name: 'Risk', areaStyle: { opacity: .2 }, lineStyle: { color: '#58a6ff' }, itemStyle: { color: '#58a6ff' } }] }],
-    tooltip: { trigger: 'item' }
-  });
+  // Init dept grid
+  renderDeptGrid(null);
 }
 
-function rand(min, max) { return Math.random() * (max - min) + min; }
-function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
-function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function renderDeptGrid(impacts) {
+  const grid = document.getElementById('deptGrid');
+  grid.innerHTML = '';
+  DEPARTMENTS.forEach(d => {
+    const score = impacts ? impacts[d.id] || 0 : 0;
+    const cls = score >= 80 ? 'impact-crit' : score >= 60 ? 'impact-high' : score >= 35 ? 'impact-med' : score > 0 ? 'impact-low' : 'impact-none';
+    const scoreColor = score >= 80 ? '#f85149' : score >= 60 ? '#d29922' : score >= 35 ? '#58a6ff' : score > 0 ? '#3fb950' : '#8b949e';
+    const node = document.createElement('div');
+    node.className = `dept-node ${cls}`;
+    node.innerHTML = `<div class="dept-icon">${d.icon}</div><div class="dept-name">${d.name}</div><div class="dept-score" style="color:${scoreColor}">${impacts ? score + '/100' : '—'}</div>`;
+    grid.appendChild(node);
+  });
+}
 
 function runSimulation() {
   if (simRunning) return;
@@ -350,87 +711,103 @@ function runSimulation() {
   btn.classList.add('running');
   btn.textContent = '⏳ Simulating…';
 
+  const type = document.getElementById('disasterType').value;
   const intensity = parseInt(document.getElementById('intensity').value);
   const cascadeW = parseInt(document.getElementById('cascade').value) / 100;
   const compound = document.getElementById('compound').checked;
-  const blackSwan = document.getElementById('blackSwan').checked;
-  const cyber = document.getElementById('cyberLayer').checked;
+  const staffShortfall = document.getElementById('staffShortfall').checked;
+  const ehrDown = document.getElementById('ehrDown').checked;
   const infraAge = parseInt(document.getElementById('infraAge').value);
   const beds = parseInt(document.getElementById('bedCap').value);
   const ehrDep = document.getElementById('ehrDep').value;
-  const geoZone = document.getElementById('geoZone').value;
-  const hospType = document.getElementById('hospType').value;
 
-  // Modifiers
+  const cfg = DISASTER_CONFIG[type];
+
   const infraMod = 1 + (infraAge / 60) * 0.4;
   const ehrMod = ehrDep === 'full' ? 1.3 : ehrDep === 'hybrid' ? 1.1 : 0.9;
-  const geoMod = { coastal: 1.3, central: 1.2, western: 1.25, northern: 1.15, urban: 1.1 }[geoZone];
-  const blackSwanBonus = blackSwan ? rand(0, 20) : 0;
-  const cyberBonus = cyber ? rand(5, 15) : 0;
   const compoundBonus = compound ? rand(5, 15) : 0;
+  const staffMod = staffShortfall ? 1.15 : 1.0;
+  const ehrBonus = ehrDown ? 1.2 : 1.0;
 
-  // Dept impacts
-  const deptScores = DEPARTMENTS.map(d => {
-    let base = rand(10, 60) * (intensity / 5) * infraMod * geoMod;
-    if (d === 'IT/Network' && cyber) base *= ehrMod * 1.4;
-    if (d === 'ICU' || d === 'Surgery') base *= 1.1;
+  // Compute dept impacts
+  const impacts = {};
+  DEPARTMENTS.forEach(d => {
+    let base = cfg.baseImpact[d.id] || 10;
+    base *= (intensity / 5) * infraMod;
+    if (d.id === 'EHR') base *= ehrMod * ehrBonus;
+    if (cfg.primary.includes(d.id)) base *= 1.1;
     base += cascadeW * rand(5, 20);
-    return clamp(Math.round(base), 0, 100);
+    base += compoundBonus * rand(0.5, 1.2);
+    base *= staffMod;
+    impacts[d.id] = clamp(Math.round(base), 0, 100);
   });
 
-  // Cascade: top-impacted depts raise others
-  const maxDept = Math.max(...deptScores);
-  const cascaded = deptScores.map(v => clamp(Math.round(v + cascadeW * (maxDept - v) * rand(0.1, 0.5)), 0, 100));
+  const overall = clamp(Math.round(Object.values(impacts).reduce((a,b)=>a+b,0)/10 + compoundBonus*0.5), 0, 100);
+  const deptsAffected = Object.values(impacts).filter(v => v > 35).length;
 
-  // Overall
-  const overall = clamp(Math.round(cascaded.reduce((a, b) => a + b, 0) / cascaded.length + blackSwanBonus + compoundBonus), 0, 100);
-
-  // Radar dims
-  const radar = [
-    clamp(Math.round(rand(40, 80) * (intensity / 5) * geoMod), 0, 100),   // operational
-    clamp(Math.round(overall * rand(0.8, 1.2)), 0, 100),                    // financial
-    clamp(Math.round(rand(30, 85) * (intensity / 5)), 0, 100),              // clinical
-    clamp(Math.round((cyber ? rand(50, 90) : rand(10, 40)) * ehrMod), 0, 100), // cyber
-    clamp(Math.round(rand(20, 70) * infraMod), 0, 100),                    // infrastructure
-    clamp(Math.round(rand(20, 65) * (intensity / 5)), 0, 100),              // supply
-  ];
-
-  // Timeline: simulate 24-hour risk curve
-  const timeline = [];
-  let cur = rand(5, 15);
-  for (let i = 0; i < 24; i++) {
-    cur += rand(-5, 12) * (intensity / 5);
-    if (blackSwan && i === randInt(6, 16)) cur += rand(20, 35);
-    timeline.push(clamp(Math.round(cur), 0, 100));
+  // Timeline: risk goes up, response capacity comes up
+  const riskTimeline = [], capTimeline = [];
+  let riskCur = rand(15, 30) * (intensity/5);
+  let capCur = 85;
+  for (let i = 0; i < 15; i++) {
+    if (i < 5) riskCur += rand(5, 12) * (intensity/5);
+    else if (i < 10) riskCur -= rand(-2, 6);
+    else riskCur -= rand(3, 10);
+    capCur = i < 3 ? capCur - rand(5, 15) : capCur + rand(2, 8);
+    riskTimeline.push(clamp(Math.round(riskCur), 0, 100));
+    capTimeline.push(clamp(Math.round(capCur), 20, 100));
   }
 
-  // Financial impact
-  const baseFinancial = beds * rand(800, 2500) * (overall / 50) * infraMod;
-  const financialFmt = baseFinancial >= 1_000_000
-    ? '$' + (baseFinancial / 1_000_000).toFixed(1) + 'M'
-    : '$' + Math.round(baseFinancial / 1000) + 'K';
+  const rawFinancial = beds * rand(1200, 3500) * (overall / 50) * infraMod;
+  const financialFmt = fmt$(rawFinancial);
+  const recovery = clamp(Math.round(overall * rand(0.1, 0.35) * infraMod), 1, 60);
 
-  // Recovery time
-  const recovery = clamp(Math.round(overall * rand(0.1, 0.4) * infraMod), 1, 90);
+  // Scenario cards
+  const scenarios = [
+    {
+      name: cfg.label,
+      type: type,
+      prob: clamp(Math.round(40 + intensity * 5 + rand(-5, 10)), 20, 95),
+      financialImpact: rawFinancial,
+      recovery: recovery,
+      severity: overall >= 70 ? 'crit' : overall >= 50 ? 'high' : overall >= 30 ? 'medium' : 'low',
+      color: overall >= 70 ? '#f85149' : overall >= 50 ? '#d29922' : overall >= 30 ? '#58a6ff' : '#3fb950',
+      primary: true
+    },
+    ...(compound ? [{
+      name: 'Secondary Compound Event',
+      type: type,
+      prob: clamp(Math.round(25 + intensity * 3 + rand(-5, 8)), 10, 70),
+      financialImpact: rawFinancial * rand(0.3, 0.6),
+      recovery: Math.round(recovery * 0.6),
+      severity: 'high',
+      color: '#d29922',
+      primary: false
+    }] : []),
+    {
+      name: 'Staffing Crisis (secondary)',
+      type: type,
+      prob: staffShortfall ? clamp(Math.round(55 + intensity * 3), 30, 85) : 20,
+      financialImpact: rawFinancial * rand(0.2, 0.4),
+      recovery: Math.round(recovery * 0.4),
+      severity: staffShortfall ? 'high' : 'low',
+      color: staffShortfall ? '#d29922' : '#3fb950',
+      primary: false
+    },
+    {
+      name: 'EHR Downtime Episode',
+      type: type,
+      prob: ehrDown ? clamp(Math.round(60 + intensity * 4), 40, 90) : 15,
+      financialImpact: rawFinancial * rand(0.3, 0.5),
+      recovery: Math.round(recovery * 0.5),
+      severity: ehrDown ? 'high' : 'low',
+      color: ehrDown ? '#d29922' : '#3fb950',
+      primary: false
+    },
+  ];
 
-  // Depts affected
-  const deptsAffected = cascaded.filter(v => v > 35).length;
+  lastSimData = { type, cfg, overall, impacts, riskTimeline, capTimeline, beds, infraMod, rawFinancial, scenarios, recovery };
 
-  // Scenario probabilities
-  const scenarioProbs = UNKNOWN_SCENARIOS.map(s => {
-    let p = s.baseProb;
-    if (s.name.includes('Cyber') || s.name.includes('Credential') || s.name.includes('AI')) p *= cyber ? 1.6 : 0.6;
-    if (s.name.includes('Solar') || s.name.includes('HVAC')) p *= geoMod * infraMod;
-    if (s.name.includes('Pathogen') || s.name.includes('Drug')) p *= hospType === 'academic' ? 1.4 : 1.0;
-    p *= (1 + (intensity - 5) * 0.08);
-    if (blackSwan) p *= 1.3;
-    return { ...s, prob: clamp(Math.round(p * 100), 1, 95) };
-  }).sort((a, b) => b.prob - a.prob);
-
-  // Risk level
-  const riskLevel = overall >= 70 ? 'HIGH' : overall >= 40 ? 'MEDIUM' : 'LOW';
-
-  // Animate update
   setTimeout(() => {
     // KPIs
     animateVal('kpiRisk', overall);
@@ -438,108 +815,248 @@ function runSimulation() {
     document.getElementById('kpiFinancial').textContent = financialFmt;
     document.getElementById('kpiRecovery').textContent = recovery + 'd';
 
-    // Risk badge
+    const riskLevel = overall >= 70 ? 'HIGH' : overall >= 40 ? 'MEDIUM' : 'LOW';
     const rb = document.getElementById('riskBadge');
     rb.textContent = riskLevel;
     rb.className = 'badge ' + riskLevel.toLowerCase();
-    document.getElementById('simBadge').textContent = `SIM #${simCount}`;
+    document.getElementById('simBadge').textContent = `SIM #${simCount} · ${cfg.label.split('/')[0].trim()}`;
     document.getElementById('simBadge').className = 'badge medium';
 
     // Dept chart
-    const colors = cascaded.map(v => v >= 70 ? '#f85149' : v >= 45 ? '#d29922' : '#3fb950');
+    const deptNames = DEPARTMENTS.map(d=>d.name);
+    const deptVals = DEPARTMENTS.map(d => impacts[d.id] || 0);
+    const deptColors = deptVals.map(v => v >= 70 ? '#f85149' : v >= 50 ? '#d29922' : v >= 30 ? '#58a6ff' : '#3fb950');
     deptChart.setOption({
-      series: [{ data: cascaded.map((v, i) => ({ value: v, itemStyle: { color: colors[i], borderRadius: 3 } })) }]
+      yAxis: { data: deptNames },
+      series: [{ data: deptVals.map((v,i)=>({ value:v, itemStyle:{ color:deptColors[i], borderRadius:3 } })) }]
     });
 
     // Timeline
-    const tlColors = timeline.map(v => v >= 70 ? '#f85149' : '#58a6ff');
     timelineChart.setOption({
-      series: [{ data: timeline, lineStyle: { color: '#58a6ff' }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: '#58a6ff44' }, { offset: 1, color: '#58a6ff05' }] }, opacity: 1 } }]
+      series: [
+        { name:'Risk Level', data: riskTimeline, lineStyle:{ color:'#f85149' }, areaStyle:{ color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#f8514930'},{offset:1,color:'#f8514905'}]} } },
+        { name:'Response Capacity', data: capTimeline }
+      ]
     });
 
-    // Radar
-    radarChart.setOption({
-      series: [{ data: [{ value: radar, areaStyle: { opacity: .25, color: '#58a6ff' }, lineStyle: { color: '#58a6ff' }, itemStyle: { color: '#58a6ff' } }] }]
-    });
+    // Dept grid
+    renderDeptGrid(impacts);
+    document.getElementById('deptDepTitle').textContent = `🏥 Department Dependency Network — ${cfg.label} · Primary trigger: ${cfg.primary.join(', ')}`;
+    renderCascade(cfg, impacts);
 
     // Scenarios
-    const grid = document.getElementById('scenarioGrid');
-    grid.innerHTML = '';
-    scenarioProbs.forEach(s => {
-      const el = document.createElement('div');
-      el.className = 'scenario-item';
-      el.innerHTML = `
-        <span class="scenario-name">${s.name}</span>
-        <div class="scenario-bar-wrap"><div class="scenario-bar" style="width:0%;background:${s.color}" data-width="${s.prob}"></div></div>
-        <span class="scenario-pct" style="color:${s.color}">${s.prob}%</span>
-      `;
-      grid.appendChild(el);
-    });
-    // animate bars
-    requestAnimationFrame(() => {
-      document.querySelectorAll('.scenario-bar').forEach(bar => {
-        bar.style.width = bar.dataset.width + '%';
-      });
-    });
+    renderScenarios(scenarios);
+
+    // Recs
+    renderRecs(cfg);
 
     // Log
-    addLog(riskLevel, overall, cascaded, blackSwan, cyber);
+    addLog(riskLevel, overall, type, cfg.label);
 
     btn.classList.remove('running');
     btn.textContent = '▶ Run Simulation';
     simRunning = false;
-  }, 1200);
+  }, 1100);
+}
+
+function renderCascade(cfg, impacts) {
+  const chain = document.getElementById('cascadeChain');
+  chain.innerHTML = '';
+  cfg.primary.forEach(id => {
+    const d = DEPARTMENTS.find(x=>x.id===id);
+    const el = document.createElement('span');
+    el.className = 'cascade-tag trigger';
+    el.textContent = `⚡ ${d ? d.name : id}`;
+    chain.appendChild(el);
+  });
+  const arrow = document.createElement('span');
+  arrow.className = 'cascade-tag';
+  arrow.textContent = '→';
+  chain.appendChild(arrow);
+  cfg.cascade.forEach(id => {
+    const d = DEPARTMENTS.find(x=>x.id===id);
+    const score = impacts[id] || 0;
+    if (score > 30) {
+      const el = document.createElement('span');
+      el.className = 'cascade-tag';
+      el.style.background = score >= 70 ? '#3f1f1f' : score >= 50 ? '#3f2f1a' : '#1a2a3a';
+      el.style.color = score >= 70 ? '#f85149' : score >= 50 ? '#d29922' : '#58a6ff';
+      el.textContent = `${d ? d.name : id} (${score})`;
+      chain.appendChild(el);
+    }
+  });
+  document.getElementById('cascadeInfo').style.display = 'block';
+}
+
+function renderScenarios(scenarios) {
+  const grid = document.getElementById('scenarioGrid');
+  grid.innerHTML = '';
+  scenarios.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 's-card' + (i === 0 ? ' active' : '');
+    card.innerHTML = `
+      <div class="s-card-header">
+        <div class="s-card-name">${s.name}</div>
+        <span class="s-pill ${s.severity}">${s.severity.toUpperCase()}</span>
+      </div>
+      <div class="s-prob-row">
+        <div class="s-bar-wrap"><div class="s-bar" style="width:0%;background:${s.color}" data-w="${s.prob}"></div></div>
+        <span class="s-pct" style="color:${s.color}">${s.prob}%</span>
+      </div>
+      <div class="s-impact-row">
+        <span>Financial: <strong>${fmt$(s.financialImpact)}</strong></span>
+        <span>Recovery: <strong>${s.recovery}d</strong></span>
+      </div>
+    `;
+    card.onclick = () => {
+      document.querySelectorAll('.s-card').forEach(c=>c.classList.remove('active'));
+      card.classList.add('active');
+      activeScenarioIdx = i;
+      renderCBA(s, lastSimData);
+    };
+    grid.appendChild(card);
+  });
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.s-bar').forEach(b => b.style.width = b.dataset.w + '%');
+  });
+  // Auto-load CBA for first scenario
+  activeScenarioIdx = 0;
+  renderCBA(scenarios[0], lastSimData);
+}
+
+function renderCBA(s, simData) {
+  if (!simData) return;
+  const cfg = simData.cfg;
+  const mit = cfg.mitigation;
+  const lossAmt = s.financialImpact;
+  document.getElementById('cbaTitle').textContent = s.name;
+
+  let html = `<div class="cba-grid">`;
+
+  // Left: Unmitigated loss breakdown
+  html += `<div class="cba-card"><h4>📉 Unmitigated Scenario Cost</h4>`;
+  const categories = [
+    { label:'Operational downtime revenue loss', pct: 0.35 },
+    { label:'Emergency response & overtime', pct: 0.20 },
+    { label:'Equipment repair / replacement', pct: 0.18 },
+    { label:'Patient diversion losses', pct: 0.15 },
+    { label:'Regulatory / compliance penalties', pct: 0.07 },
+    { label:'Reputational / market share impact', pct: 0.05 },
+  ];
+  categories.forEach(c => {
+    html += `<div class="cba-row"><span class="label">${c.label}</span><span class="val red">${fmt$(lossAmt * c.pct)}</span></div>`;
+  });
+  html += `<div class="cba-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px"><span class="label" style="font-weight:700;color:var(--text)">Total Projected Loss</span><span class="val red" style="font-size:15px">${fmt$(lossAmt)}</span></div>`;
+  html += `</div>`;
+
+  // Right: Mitigation solutions
+  html += `<div class="cba-card"><h4>✅ Mitigation Solutions & ROI</h4>`;
+  if (mit && mit.solutions) {
+    mit.solutions.forEach(sol => {
+      const cost = sol.cost_base * simData.beds / 100 * 1e6;
+      const saving = cost * sol.roi_factor;
+      const roi = Math.round((saving - cost) / cost * 100);
+      html += `<div class="cba-row"><span class="label">${sol.name}</span><span></span></div>`;
+      html += `<div class="cba-row" style="padding-left:10px;border-bottom:none"><span class="label">Cost</span><span class="val yellow">${fmt$(cost)}</span></div>`;
+      html += `<div class="cba-row" style="padding-left:10px"><span class="label">Loss avoided</span><span class="val green">${fmt$(saving)}</span></div>`;
+    });
+  }
+  html += `</div>`;
+  html += `</div>`;
+
+  // Visual comparison bars
+  html += `<div class="cba-compare-chart" style="margin-top:16px">`;
+  if (mit && mit.solutions) {
+    mit.solutions.forEach(sol => {
+      const cost = sol.cost_base * simData.beds / 100 * 1e6;
+      const saving = cost * sol.roi_factor;
+      const roi = Math.round((saving - cost) / cost * 100);
+      const costPct = Math.round(cost / lossAmt * 100);
+      const savingPct = Math.min(100, Math.round(saving / lossAmt * 100));
+      html += `<div class="cba-bar-label">${sol.name}</div>`;
+      html += `<div class="cba-bar-track"><div class="cba-bar-fill" style="width:0%;background:var(--danger)" data-w="${Math.min(costPct,100)}">${fmt$(cost)} cost</div></div>`;
+      html += `<div class="cba-bar-track"><div class="cba-bar-fill" style="width:0%;background:var(--ok)" data-w="${savingPct}">${fmt$(saving)} loss avoided · ROI ${roi}%</div></div>`;
+      html += `<div style="margin-bottom:10px"></div>`;
+    });
+  }
+  html += `</div>`;
+
+  // Verdict
+  if (mit && mit.solutions) {
+    const cheapest = mit.solutions.reduce((a,b) => (a.cost_base < b.cost_base ? a : b));
+    const cost = cheapest.cost_base * simData.beds / 100 * 1e6;
+    const saving = cost * cheapest.roi_factor;
+    html += `<div class="cba-verdict"><strong>Highest-ROI action:</strong> ${cheapest.name} — ${fmt$(cost)} investment avoids ${fmt$(saving)} in losses (${cheapest.timeframe} to implement, ${cheapest.priority === 'high' ? '🔴 high' : '🟡 medium'} priority). ${cheapest.desc}</div>`;
+  }
+
+  document.getElementById('cbaContent').innerHTML = html;
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.cba-bar-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
+  });
+}
+
+function renderRecs(cfg) {
+  const list = document.getElementById('recList');
+  list.innerHTML = '';
+  const allRecs = [...(cfg.recs || [])];
+
+  // Add universal disaster management recs
+  allRecs.push(
+    { title:'Conduct annual full-scale HICS emergency management exercise', priority:'med', cost:'$15K–40K/exercise', saving:'$5M+ per better-managed event', desc:'Tabletop exercises expose 60% more gaps than paper reviews. Full-scale drills expose 90% more.' },
+    { title:'Register with regional Healthcare Coalition for mutual aid', priority:'med', cost:'$5K/yr membership', saving:'$10M+ per major event in coordinated response value', desc:'Healthcare coalitions provide coordinated resource sharing, communication, and evacuation support during declared emergencies.' }
+  );
+
+  allRecs.forEach(r => {
+    const priorityClass = r.priority === 'high' ? 'priority-high' : 'priority-med';
+    const item = document.createElement('div');
+    item.className = 'rec-item';
+    item.innerHTML = `
+      <div class="rec-title">${r.title}</div>
+      <div class="rec-meta">
+        <span class="${priorityClass}">Priority: <strong>${r.priority === 'high' ? '🔴 High' : '🟡 Medium'}</strong></span>
+        <span>Impl. Cost: <strong>${r.cost}</strong></span>
+        <span>Potential Saving: <strong>${r.saving}</strong></span>
+      </div>
+      <div class="rec-desc">${r.desc}</div>
+    `;
+    list.appendChild(item);
+  });
 }
 
 function animateVal(id, target) {
   const el = document.getElementById(id);
   const start = parseInt(el.textContent) || 0;
-  const dur = 600, startTime = performance.now();
+  const dur = 600, t0 = performance.now();
   function step(now) {
-    const p = Math.min((now - startTime) / dur, 1);
+    const p = Math.min((now - t0) / dur, 1);
     el.textContent = Math.round(start + (target - start) * p);
     if (p < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
 
-function addLog(level, score, deptScores, blackSwan, cyber) {
+function addLog(level, score, type, label) {
   const list = document.getElementById('logList');
   const empty = list.querySelector('.empty-state');
   if (empty) empty.remove();
 
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const cls = score >= 70 ? 'crit' : score >= 40 ? 'warn' : 'info';
-  const topDept = DEPARTMENTS[deptScores.indexOf(Math.max(...deptScores))];
-  const msgs = [
-    `Simulation #${simCount} complete — Overall risk ${score}/100. Highest impact: ${topDept}.`,
-    ...(blackSwan ? [`⚠ Black Swan event detected in simulation window.`] : []),
-    ...(cyber ? [`Cyber threat layer active — IT/Network exposure elevated.`] : []),
-    ...(score >= 70 ? [`CRITICAL: Multiple cascading failures projected. Recovery plan required.`] : []),
-  ];
-
-  msgs.forEach(msg => {
-    const item = document.createElement('div');
-    item.className = `log-item ${cls}`;
-    item.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-msg">${msg}</span><span class="log-score">${score}</span>`;
-    list.insertBefore(item, list.firstChild);
-  });
-
-  // Trim to last 20
-  while (list.children.length > 20) list.removeChild(list.lastChild);
+  const item = document.createElement('div');
+  item.className = `log-item ${cls}`;
+  item.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-msg">SIM #${simCount} · <strong>${label}</strong> · Risk ${score}/100 — ${score >= 70 ? 'CRITICAL: multi-dept cascade detected' : score >= 40 ? 'Moderate impact, response protocols applicable' : 'Manageable with existing protocols'}</span>`;
+  list.insertBefore(item, list.firstChild);
+  while (list.children.length > 15) list.removeChild(list.lastChild);
 }
 
 function clearLog() {
   document.getElementById('logList').innerHTML = '<div class="empty-state">Log cleared</div>';
 }
 
-// ── Init ──
 window.addEventListener('load', () => {
   initCharts();
-  window.addEventListener('resize', () => {
-    deptChart.resize(); timelineChart.resize(); radarChart.resize();
-  });
+  updateDisasterHints();
+  window.addEventListener('resize', () => { deptChart.resize(); timelineChart.resize(); });
 });
 </script>
 </body>
