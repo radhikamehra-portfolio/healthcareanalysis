@@ -95,23 +95,41 @@
   .s-impact-row { display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: var(--muted); }
   .s-impact-row span strong { color: var(--text); }
 
-  /* ── Department Dependency ── */
+  /* ── Local Context Panel ── */
+  .context-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .context-panel h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; display:flex; align-items:center; gap:8px; }
+  .context-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .context-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .context-stat .cs-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .context-stat .cs-val { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 2px; }
+  .context-stat .cs-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .context-notes { margin-top: 10px; padding: 10px 12px; background: var(--surface); border-radius: 8px; border: 1px solid var(--border); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .context-notes strong { color: var(--ok); }
+  .context-risk-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .ctx-tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); background: var(--surface); }
+  .ctx-tag.active { color: var(--warn); border-color: var(--warn); background: rgba(210,153,34,0.08); }
+
+  /* ── Department Cascade Story ── */
   .dept-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .dept-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
-  .dept-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .dept-node { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; position: relative; transition: border-color .3s, background .3s; }
-  .dept-node .dept-icon { font-size: 18px; margin-bottom: 4px; }
-  .dept-node .dept-name { font-size: 11px; font-weight: 600; color: var(--text); }
-  .dept-node .dept-score { font-size: 10px; font-weight: 700; margin-top: 3px; }
-  .dept-node.impact-crit { border-color: var(--danger); background: #1a0d0d; }
-  .dept-node.impact-high { border-color: var(--warn); background: #1a150a; }
-  .dept-node.impact-med { border-color: var(--accent); background: #0d1420; }
-  .dept-node.impact-low { border-color: var(--ok); background: #0d1a0d; }
-  .dept-node.impact-none { border-color: var(--border); }
-  .dept-cascade-label { font-size: 10px; color: var(--muted); margin-top: 10px; }
-  .cascade-chain { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-  .cascade-tag { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: var(--border); color: var(--muted); }
-  .cascade-tag.trigger { background: #3f1f1f; color: var(--danger); }
+  .dept-section h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .dept-section .dept-subtitle { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .cascade-story { display: flex; flex-direction: column; gap: 0; }
+  .cascade-step { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .cascade-step:last-child { border-bottom: none; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--border); color: var(--muted); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-num.crit { background: rgba(248,81,73,0.2); color: var(--danger); }
+  .step-num.high { background: rgba(210,153,34,0.2); color: var(--warn); }
+  .step-num.med { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .step-body { flex: 1; }
+  .step-dept { font-size: 12px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .step-dept .step-impact-pill { font-size: 10px; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
+  .step-desc { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .step-consequence { font-size: 11px; color: var(--warn); margin-top: 3px; }
+  .dept-score-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .dept-score-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; max-width: 120px; }
+  .dept-score-fill { height: 100%; border-radius: 3px; }
+  .dept-score-label { font-size: 10px; font-weight: 700; min-width: 32px; }
+  .cascade-empty { color: var(--muted); font-size: 12px; padding: 20px 0; text-align: center; }
 
   /* ── Cost-Benefit Analysis ── */
   .cba-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
@@ -171,6 +189,59 @@
       Healthcare Disaster Preparedness
       <span>Known Risk Factor Simulator v2.0</span>
       <div class="tag">✓ ANTICIPATABLE RISKS</div>
+    </div>
+
+    <div>
+      <div class="section-label">Local Context</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <div class="field">
+          <label>City / Locale Name</label>
+          <input type="text" id="cityName" value="Springfield, IL" style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:12px;outline:none;width:100%" />
+        </div>
+        <div class="field">
+          <label>Population (metro area)</label>
+          <select id="popSize">
+            <option value="small">Under 50,000 (Small Town)</option>
+            <option value="mid" selected>50K–250K (Mid-Size City)</option>
+            <option value="large">250K–1M (Large City)</option>
+            <option value="metro">1M+ (Major Metro)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Population Density</label>
+          <select id="popDensity">
+            <option value="rural">Rural / Dispersed</option>
+            <option value="suburban" selected>Suburban</option>
+            <option value="urban">Dense Urban</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Median Household Income</label>
+          <select id="medIncome">
+            <option value="low">Under $40K (Low Income)</option>
+            <option value="mid" selected>$40K–$75K (Middle Income)</option>
+            <option value="high">$75K–$120K (Upper Middle)</option>
+            <option value="affluent">$120K+ (Affluent)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Dominant Local Industry</label>
+          <select id="localIndustry">
+            <option value="agriculture">Agriculture / Farming</option>
+            <option value="manufacturing">Manufacturing / Industrial</option>
+            <option value="energy">Energy / Oil &amp; Gas</option>
+            <option value="tech">Technology / Office</option>
+            <option value="tourism">Tourism / Hospitality</option>
+            <option value="government" selected>Government / Military</option>
+            <option value="healthcare">Healthcare Hub</option>
+            <option value="mixed">Mixed / Diverse</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Unique Infrastructure Notes</label>
+          <textarea id="infraNotes" rows="2" placeholder="e.g. Aging municipal water main, single-road access in winter, refinery 2 miles east…" style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 8px;font-size:11px;outline:none;width:100%;resize:vertical;line-height:1.5;color:#8b949e"></textarea>
+        </div>
+      </div>
     </div>
 
     <div>
@@ -329,15 +400,19 @@
       </div>
     </div>
 
-    <!-- Department Dependency Network -->
+    <!-- Local Context Summary Panel -->
+    <div class="context-panel" id="contextPanel" style="display:none">
+      <h3>📍 Facility &amp; Community Profile — <span id="contextCityName" style="color:var(--ok)"></span></h3>
+      <div class="context-grid" id="contextGrid"></div>
+      <div class="context-notes" id="contextNotes"></div>
+    </div>
+
+    <!-- Department Cascade Story -->
     <div class="dept-section">
-      <h3 id="deptDepTitle">🏥 Department Dependency Network — select a scenario and run simulation to see cascade</h3>
-      <div class="dept-grid" id="deptGrid">
-        <!-- filled by JS -->
-      </div>
-      <div id="cascadeInfo" style="margin-top:12px;display:none">
-        <div class="dept-cascade-label">Cascade chain from trigger event:</div>
-        <div class="cascade-chain" id="cascadeChain"></div>
+      <h3 id="deptDepTitle">🏥 Failure Cascade — What Actually Happens, Step by Step</h3>
+      <div class="dept-subtitle" id="deptSubtitle">Run a simulation to see how this disaster propagates through hospital departments</div>
+      <div class="cascade-story" id="cascadeStory">
+        <div class="cascade-empty">Run a simulation to generate the cascade story</div>
       </div>
     </div>
 
@@ -684,22 +759,6 @@ function initCharts() {
     tooltip: { trigger: 'axis' }
   });
 
-  // Init dept grid
-  renderDeptGrid(null);
-}
-
-function renderDeptGrid(impacts) {
-  const grid = document.getElementById('deptGrid');
-  grid.innerHTML = '';
-  DEPARTMENTS.forEach(d => {
-    const score = impacts ? impacts[d.id] || 0 : 0;
-    const cls = score >= 80 ? 'impact-crit' : score >= 60 ? 'impact-high' : score >= 35 ? 'impact-med' : score > 0 ? 'impact-low' : 'impact-none';
-    const scoreColor = score >= 80 ? '#f85149' : score >= 60 ? '#d29922' : score >= 35 ? '#58a6ff' : score > 0 ? '#3fb950' : '#8b949e';
-    const node = document.createElement('div');
-    node.className = `dept-node ${cls}`;
-    node.innerHTML = `<div class="dept-icon">${d.icon}</div><div class="dept-name">${d.name}</div><div class="dept-score" style="color:${scoreColor}">${impacts ? score + '/100' : '—'}</div>`;
-    grid.appendChild(node);
-  });
 }
 
 function runSimulation() {
@@ -720,6 +779,13 @@ function runSimulation() {
   const infraAge = parseInt(document.getElementById('infraAge').value);
   const beds = parseInt(document.getElementById('bedCap').value);
   const ehrDep = document.getElementById('ehrDep').value;
+  const cityName = document.getElementById('cityName').value || 'Unknown Location';
+  const popSize = document.getElementById('popSize').value;
+  const popDensity = document.getElementById('popDensity').value;
+  const medIncome = document.getElementById('medIncome').value;
+  const localIndustry = document.getElementById('localIndustry').value;
+  const infraNotes = document.getElementById('infraNotes').value;
+  const hospType = document.getElementById('hospType').value;
 
   const cfg = DISASTER_CONFIG[type];
 
@@ -806,7 +872,7 @@ function runSimulation() {
     },
   ];
 
-  lastSimData = { type, cfg, overall, impacts, riskTimeline, capTimeline, beds, infraMod, rawFinancial, scenarios, recovery };
+  lastSimData = { type, cfg, overall, impacts, riskTimeline, capTimeline, beds, infraMod, rawFinancial, scenarios, recovery, cityName };
 
   setTimeout(() => {
     // KPIs
@@ -839,10 +905,11 @@ function runSimulation() {
       ]
     });
 
-    // Dept grid
-    renderDeptGrid(impacts);
-    document.getElementById('deptDepTitle').textContent = `🏥 Department Dependency Network — ${cfg.label} · Primary trigger: ${cfg.primary.join(', ')}`;
-    renderCascade(cfg, impacts);
+    // Local context panel
+    renderLocalContext(cityName, popSize, popDensity, medIncome, localIndustry, infraNotes, infraAge, beds, hospType);
+
+    // Cascade story
+    renderCascadeStory(cfg, impacts, type, cityName, hospType);
 
     // Scenarios
     renderScenarios(scenarios);
@@ -859,33 +926,159 @@ function runSimulation() {
   }, 1100);
 }
 
-function renderCascade(cfg, impacts) {
-  const chain = document.getElementById('cascadeChain');
-  chain.innerHTML = '';
-  cfg.primary.forEach(id => {
-    const d = DEPARTMENTS.find(x=>x.id===id);
-    const el = document.createElement('span');
-    el.className = 'cascade-tag trigger';
-    el.textContent = `⚡ ${d ? d.name : id}`;
-    chain.appendChild(el);
+// Cascade story narratives per disaster × department
+const CASCADE_NARRATIVES = {
+  power_outage: {
+    POWER: { what:'Grid failure cuts all external power to the facility', consequence:'Backup generators activate — but capacity may be insufficient for full census load', timing:'0–5 min' },
+    ICU:   { what:'Ventilators, infusion pumps, and monitoring equipment switch to UPS battery backup', consequence:'ICU nurses manually verify every device; overhead alerts create noise confusion throughout the unit', timing:'0–10 min' },
+    OR:    { what:'Operating rooms lose primary lighting mid-procedure; surgical lights fail over to emergency circuits', consequence:'Active surgeries must pause or continue under battery-powered surgical lamps — a tense, high-risk window', timing:'2–8 min' },
+    EHR:   { what:'Electronic health records lose connectivity if UPS capacity is insufficient for the server room', consequence:'Clinical staff revert to paper downtime procedures — medication orders and lab results become inaccessible', timing:'5–20 min' },
+    RAD:   { what:'CT scanners, MRIs, and X-ray machines power down (they cannot run on standard generator circuits)', consequence:'All imaging unavailable for ED trauma workups and ICU monitoring until power is restored', timing:'5–15 min' },
+    LAB:   { what:'Automated analyzers and centrifuges lose calibration on sudden power interruption', consequence:'Lab must re-run specimens from scratch; turnaround time increases 3–4× for critical results', timing:'10–30 min' },
+    PHARM: { what:'Refrigerated medication storage loses temperature control if pharmacy circuit is on a non-critical panel', consequence:'Temperature-sensitive medications (insulin, biologics, vaccines) at risk of spoilage within 2 hours', timing:'30–90 min' },
+    SUPPLY:{ what:'Loading dock doors and refrigerated supply areas may lose power', consequence:'Incoming supply deliveries cannot be processed; cold chain at risk for perishables', timing:'60+ min' },
+    ADMIN: { what:'Admissions terminals, billing systems, and communication phones go offline', consequence:'Patient registration bottlenecks at ED; incoming ambulance coordination severely disrupted', timing:'10–30 min' },
+    ED:    { what:'Emergency department triage area loses powered equipment and tracking boards', consequence:'ED may divert incoming ambulances if generator capacity is confirmed insufficient', timing:'15–45 min' },
+  },
+  hurricane: {
+    ED:    { what:'Emergency department begins receiving pre-storm evacuee injuries and anxiety presentations 48+ hours early', consequence:'Volume spike depletes staff reserves before the main event hits — the peak demand arrives during the storm, not before', timing:'48–72h before landfall' },
+    SUPPLY:{ what:'Supply delivery trucks stop running as storm approaches; vendors halt shipments', consequence:'Hospital enters the storm with whatever is on-shelf — typically only 48–72h supply', timing:'24–48h before' },
+    POWER: { what:'Wind-driven damage to external power lines cuts grid connection during peak storm', consequence:'Facility runs on generator; fuel burn rate doubles under HVAC load fighting the humidity and heat post-storm', timing:'During storm' },
+    ICU:   { what:'ICU receives trauma surge from storm injuries while simultaneously managing existing critical patients', consequence:'ICU nurse-to-patient ratios degrade; highest-acuity patients most at risk during the overlap period', timing:'During + 12h after' },
+    PHARM: { what:'Pharmacy cold storage at risk if generator fuel runs low or HVAC fails under storm load', consequence:'Blood products and refrigerated medications spoil — frequently the single largest financial loss category post-hurricane', timing:'12–36h after landfall' },
+    EHR:   { what:'Cloud-based EHR access disrupted if internet connectivity is severed (independent of power)', consequence:'Clinicians cannot pull medication histories for storm victims — unknown allergy risk on every admission', timing:'During storm' },
+    OR:    { what:'Elective and semi-elective procedures cancelled pre-storm; OR held exclusively for trauma', consequence:'Operating revenue loss begins 48h before landfall; ORs may need to convert to mass casualty triage space', timing:'48h before through recovery' },
+    ADMIN: { what:'Administrative staff may shelter-at-home rather than commute into the storm zone', consequence:'Staffing falls 20–40% at exactly the moment patient volume peaks — a double vulnerability', timing:'During storm' },
+  },
+  ransomware: {
+    EHR:   { what:'Ransomware encrypts all EHR servers and backup systems simultaneously', consequence:'Clinical staff lose access to patient records, medication lists, lab results, and imaging across all departments', timing:'Hour 0 (attack detected)' },
+    PHARM: { what:'Pharmacy dispensing systems run on EHR integration — when EHR is down, automated dispensing cabinets lock', consequence:'Nurses must call pharmacy for every single medication; pharmacy manually verifies every order by phone — an enormous bottleneck', timing:'0–2h after attack' },
+    LAB:   { what:'Lab result routing through the EHR is severed; results cannot be delivered to ordering physicians', consequence:'Critical results go undelivered — nurses must call lab for every individual result, manually and repeatedly', timing:'0–2h after attack' },
+    ED:    { what:'ED tracking boards, triage scoring tools, and patient assignment systems are all EHR-dependent', consequence:'ED reverts to whiteboards and paper; waiting room management collapses; ambulance diversion is considered', timing:'1–4h after attack' },
+    OR:    { what:'Surgical scheduling, implant tracking, and anesthesia records all require EHR access', consequence:'Elective cases cancelled immediately; emergent cases proceed with hand-written anesthesia records only', timing:'1–6h after attack' },
+    ICU:   { what:'ICU flow sheets, ventilator parameters, and medication drip calculations typically live in the EHR', consequence:'ICU nurses maintain handwritten flow sheets — cognitive load and medication error risk increase significantly', timing:'2–12h after attack' },
+    RAD:   { what:'PACS imaging archive is typically networked with EHR — images may be inaccessible or unattributable to patients', consequence:'Radiologists cannot link reads to patients; imaging workflow halts across ED, ICU, and inpatient floors', timing:'1–4h after attack' },
+    ADMIN: { what:'Billing, scheduling, and HR systems are encrypted — operational continuity becomes the entire focus', consequence:'Revenue cycle stops completely; payroll processing is at risk if the attack extends beyond 72 hours', timing:'0–24h after attack' },
+  },
+  pandemic: {
+    ED:    { what:'ED becomes the first point of contact for undiagnosed infectious surge patients before isolation protocols are in place', consequence:'Without established isolation capacity, ED exposure risk spreads to all staff and other patients in the waiting area', timing:'Days 1–7' },
+    ICU:   { what:'ICU begins filling with severe cases faster than the normal discharge rate can clear beds', consequence:'ICU occupancy crosses 90% → 100%+ within days; elective admissions cancelled to free beds — revenue drops sharply', timing:'Days 7–21' },
+    SUPPLY:{ what:'PPE, ventilators, and pharmaceutical supplies consumed at 10–50× the normal daily rate', consequence:'Standard 48–72h supply buffer depleted within days; spot-market procurement at 10–50× premium pricing begins', timing:'Days 1–14' },
+    OR:    { what:'Operating rooms converted to ICU overflow space as the surge intensifies beyond all projections', consequence:'All elective and semi-elective surgical revenue halted — the single largest operating income category disappears', timing:'Days 14–30' },
+    ADMIN: { what:'Staff absenteeism rises as clinical staff fall ill or enter quarantine', consequence:'Staffing falls 20–40% precisely when volume is at its highest; agency staff costs spike 3–5× normal rate', timing:'Days 7–30' },
+    PHARM: { what:'Formulary for treatment drugs depleted; substitutes may not be therapeutically equivalent for all patients', consequence:'Clinicians forced into off-label drug substitution without full evidence base — liability and outcome risk increase', timing:'Days 14–60' },
+    EHR:   { what:'EHR becomes the critical coordination system — surge tracking, bed management, and lab routing all depend on it', consequence:'Any EHR degradation during peak surge is catastrophically amplified — this is the worst possible time for downtime', timing:'Ongoing throughout surge' },
+  },
+};
+
+function getCascadeNarrative(disasterType, deptId) {
+  const specific = CASCADE_NARRATIVES[disasterType];
+  if (specific && specific[deptId]) return specific[deptId];
+  const DEPT_DESC = { ED:'Emergency Department operations', ICU:'ICU and critical care', OR:'Surgery and operating rooms', EHR:'Electronic health records and IT', PHARM:'Pharmacy and medication dispensing', RAD:'Radiology and imaging', LAB:'Laboratory services', POWER:'Power and utilities infrastructure', SUPPLY:'Supply chain and materials management', ADMIN:'Administration and coordination' };
+  return {
+    what: `${DEPT_DESC[deptId] || deptId} disrupted by this event`,
+    consequence: 'Downstream operational impact — monitor for escalation to adjacent departments',
+    timing: 'During event'
+  };
+}
+
+function renderCascadeStory(cfg, impacts, disasterType, cityName, hospType) {
+  const story = document.getElementById('cascadeStory');
+  const subtitle = document.getElementById('deptSubtitle');
+  const title = document.getElementById('deptDepTitle');
+
+  const sorted = DEPARTMENTS
+    .map(d => ({ ...d, score: impacts[d.id] || 0 }))
+    .filter(d => d.score > 15)
+    .sort((a, b) => b.score - a.score);
+
+  if (sorted.length === 0) {
+    story.innerHTML = '<div class="cascade-empty">No significant department impacts detected</div>';
+    return;
+  }
+
+  const hospTypeLabel = { community:'Community Hospital', academic:'Academic Medical Center', rural:'Rural Critical Access', childrens:"Children's Hospital", trauma:'Level I Trauma Center' }[hospType] || hospType;
+  title.textContent = `🏥 Failure Cascade — ${cfg.label} at ${cityName}`;
+  subtitle.textContent = `How this event propagates through ${hospTypeLabel} operations — ordered by severity · Use this to walk hospital leadership through what actually happens`;
+
+  story.innerHTML = '';
+  sorted.forEach((d, i) => {
+    const narr = getCascadeNarrative(disasterType, d.id);
+    const sevCls = d.score >= 70 ? 'crit' : d.score >= 45 ? 'high' : 'med';
+    const pillBg = d.score >= 70 ? 'rgba(248,81,73,0.2)' : d.score >= 45 ? 'rgba(210,153,34,0.2)' : 'rgba(88,166,255,0.15)';
+    const pillColor = d.score >= 70 ? '#f85149' : d.score >= 45 ? '#d29922' : '#58a6ff';
+    const barColor = d.score >= 70 ? '#f85149' : d.score >= 45 ? '#d29922' : '#58a6ff';
+    const sevLabel = d.score >= 70 ? 'Critical' : d.score >= 45 ? 'High' : 'Moderate';
+
+    const step = document.createElement('div');
+    step.className = 'cascade-step';
+    step.innerHTML = `
+      <div class="step-num ${sevCls}">${i + 1}</div>
+      <div class="step-body">
+        <div class="step-dept">
+          ${d.icon} ${d.name}
+          <span class="step-impact-pill" style="background:${pillBg};color:${pillColor}">${sevLabel} · ${d.score}/100</span>
+          <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:4px">${narr.timing}</span>
+        </div>
+        <div class="step-desc">${narr.what}</div>
+        <div class="step-consequence">→ ${narr.consequence}</div>
+        <div class="dept-score-bar">
+          <div class="dept-score-track"><div class="dept-score-fill" style="width:0%;background:${barColor}" data-w="${d.score}"></div></div>
+          <span class="dept-score-label" style="color:${barColor}">${d.score}%</span>
+        </div>
+      </div>
+    `;
+    story.appendChild(step);
   });
-  const arrow = document.createElement('span');
-  arrow.className = 'cascade-tag';
-  arrow.textContent = '→';
-  chain.appendChild(arrow);
-  cfg.cascade.forEach(id => {
-    const d = DEPARTMENTS.find(x=>x.id===id);
-    const score = impacts[id] || 0;
-    if (score > 30) {
-      const el = document.createElement('span');
-      el.className = 'cascade-tag';
-      el.style.background = score >= 70 ? '#3f1f1f' : score >= 50 ? '#3f2f1a' : '#1a2a3a';
-      el.style.color = score >= 70 ? '#f85149' : score >= 50 ? '#d29922' : '#58a6ff';
-      el.textContent = `${d ? d.name : id} (${score})`;
-      chain.appendChild(el);
-    }
+  requestAnimationFrame(() => {
+    story.querySelectorAll('.dept-score-fill').forEach(b => { b.style.width = b.dataset.w + '%'; });
   });
-  document.getElementById('cascadeInfo').style.display = 'block';
+}
+
+function renderLocalContext(cityName, popSize, popDensity, medIncome, localIndustry, infraNotes, infraAge, beds, hospType) {
+  const panel = document.getElementById('contextPanel');
+  document.getElementById('contextCityName').textContent = cityName;
+
+  const popLabels = { small:'< 50K', mid:'50K–250K', large:'250K–1M', metro:'1M+' };
+  const densityLabels = { rural:'Rural', suburban:'Suburban', urban:'Dense Urban' };
+  const incomeLabels = { low:'< $40K', mid:'$40K–75K', high:'$75K–120K', affluent:'$120K+' };
+  const industryLabels = { agriculture:'Agriculture', manufacturing:'Manufacturing', energy:'Energy / O&G', tech:'Technology', tourism:'Tourism', government:'Government', healthcare:'Healthcare Hub', mixed:'Mixed' };
+  const hospTypeLabels = { community:'Community Hospital', academic:'Academic Medical Center', rural:'Rural Critical Access', childrens:"Children's Hospital", trauma:'Level I Trauma Center' };
+
+  const incomeMod = { low:1.3, mid:1.0, high:0.85, affluent:0.75 }[medIncome] || 1.0;
+  const densityMod = { rural:0.9, suburban:1.0, urban:1.2 }[popDensity] || 1.0;
+
+  const stats = [
+    { label:'Location', val: cityName, sub: `${densityLabels[popDensity]} · ${popLabels[popSize]}` },
+    { label:'Hospital Type', val: hospTypeLabels[hospType] || hospType, sub: `${beds} beds` },
+    { label:'Building Age', val: infraAge + ' yrs', sub: infraAge > 35 ? '⚠ High age risk' : infraAge > 20 ? 'Moderate age' : 'Relatively modern' },
+    { label:'Local Income', val: incomeLabels[medIncome], sub: incomeMod > 1.1 ? '↑ Increases financial exposure' : incomeMod < 0.9 ? '↓ Reduces exposure' : 'Neutral impact' },
+    { label:'Population Density', val: densityLabels[popDensity], sub: densityMod > 1.1 ? '↑ Surge risk elevated' : 'Standard surge model' },
+    { label:'Local Industry', val: industryLabels[localIndustry] || localIndustry, sub: localIndustry === 'manufacturing' || localIndustry === 'energy' ? '⚠ HAZMAT proximity risk' : localIndustry === 'agriculture' ? '⚠ Chemical + seasonal surge risk' : 'Standard risk profile' },
+  ];
+
+  document.getElementById('contextGrid').innerHTML = stats.map(s => `
+    <div class="context-stat">
+      <div class="cs-label">${s.label}</div>
+      <div class="cs-val">${s.val}</div>
+      <div class="cs-sub">${s.sub}</div>
+    </div>
+  `).join('');
+
+  const notes = [];
+  if (infraAge > 35) notes.push('Aging infrastructure significantly amplifies most disaster scenarios — prioritize structural and utility audits as a first consulting recommendation.');
+  if (medIncome === 'low') notes.push('Low-income service area: patients are less likely to have transportation alternatives during evacuation scenarios, increasing shelter-in-place demand on the facility.');
+  if (popDensity === 'urban') notes.push('Dense urban setting creates faster surge dynamics — ED can fill within hours during a mass casualty or epidemic event. Response capacity margin is thin.');
+  if (localIndustry === 'manufacturing' || localIndustry === 'energy') notes.push('Industrial / energy operations nearby elevate HAZMAT exposure risk — CAMEO/ALOHA plume mapping and antidote cache stocking recommended.');
+  if (localIndustry === 'agriculture') notes.push('Agricultural area: elevated seasonal surge risk (pesticide exposures, farm accidents), and weather events that isolate the facility from supply routes.');
+  if (popDensity === 'rural' || popSize === 'small') notes.push('Sole-provider or near-sole-provider context: patient diversion is not a realistic option — the facility must absorb any surge with existing capacity.');
+  if (infraNotes && infraNotes.trim()) notes.push(`<strong>Noted infrastructure factors:</strong> ${infraNotes.trim()}`);
+
+  document.getElementById('contextNotes').innerHTML = notes.length
+    ? notes.map(n => `• ${n}`).join('<br>')
+    : '• No specific contextual risk amplifiers identified based on current inputs.';
+
+  panel.style.display = 'block';
 }
 
 function renderScenarios(scenarios) {
